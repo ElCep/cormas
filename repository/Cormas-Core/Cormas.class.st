@@ -104,11 +104,11 @@ Cormas class >> addOnsPath [
 ]
 
 { #category : #'+ utilities - code management' }
-Cormas class >> allTerminalClassesOf: aClassRoot [
-	"Purpose: Returns a collection of all the terminal classes of aClassRoot
-Example: Cormas allTerminalClassesOf: Forager"
-	
-	^aClassRoot withAllSubclasses select: [:aClass | self isTerminal: aClass]
+Cormas class >> allTerminalClassesOf: aClass [
+	"Purpose: Returns a collection of all the terminal classes of aClass
+	Example: Cormas allTerminalClassesOf: CMECECForager"
+
+	^ aClass withAllSubclasses select: [ :each | self isTerminal: each ]
 ]
 
 { #category : #'+ utilities - files' }
@@ -812,13 +812,10 @@ Cormas class >> isTerminal: aClass [
 	use the well known hack size = 0 for testing nil or empty collection
 
 	self isTerminal: Object.
-	self isTerminal: Fraction.
-
-	Time microsecondsToRun: [10000 timesRepeat: [ Object subclasses isEmpty. Fraction subclasses isEmpty ]]
-	Time microsecondsToRun: [10000 timesRepeat: [ CormasModel isTerminal: Object.  CormasModel isTerminal: Fraction ]]
+	self isTerminal: UndefinedObject.
 	"
-	
-	^aClass subclasses size == 0
+
+	^ aClass hasSubclasses not
 ]
 
 { #category : #accessing }
@@ -1074,9 +1071,9 @@ ex:		Cormas median: #( 1 2 3) 	=> 2
 
 { #category : #'+ utilities - mathematics' }
 Cormas class >> min: aCollectionOfNumbers [
-	"Answer the minimum of a set of numbers. 
-aCollectionOfNumbers = < OrderedCollection> or <Array>
-ex:		Cormas min: #( 1 2 3)	=> 1"
+	"Purpose: Answer the minimum of a set of numbers. 
+	Argument: aCollectionOfNumbers = < OrderedCollection> or <Array>
+	Example:	Cormas min: #( 1 2 3)	=> 1"
 
 	^ aCollectionOfNumbers min
 ]
@@ -1192,8 +1189,8 @@ Examples:
 	Cormas number: 5 onCycle: 5 => 5
 	Cormas number: 6 onCycle: 5 => 1
 	Cormas number: 7 onCycle: 5 => 2"
-	
-	^(aNumber - 1) \\ aCycleBase + 1
+
+	^ (aNumber - 1) \\ aCycleBase + 1
 ]
 
 { #category : #'+ utilities - string' }
@@ -2633,9 +2630,9 @@ Examples:
 
 { #category : #'+ utilities - mathematics' }
 Cormas class >> sum: aCollectionOfNumbers [
-	"Purpoose: Answer the summation of a set of numbers. 
-Argument: aCollectionOfNumbers = < OrderedCollection> or <Array>
-Example: Cormas sum: #( 1 2 3)	=> 6"
+	"Purpose: Answer the summation of a set of numbers. 
+	Argument: aCollectionOfNumbers = < OrderedCollection> or <Array>
+	Example: Cormas sum: #( 1 2 3)	=> 6"
 
 	^ aCollectionOfNumbers sum
 ]
@@ -3821,27 +3818,30 @@ Cormas >> confirm_DeleteSimulation [
 
 { #category : #'user messages' }
 Cormas >> confirm_IsAbstractClass: aClass [
-	
 	| text |
-	Dev todo: 'Il y a TextStream pour faire √ßa'.
+	self flag:#TODO.
+	"Il y a TextStream pour faire ca."
 	text := '                                           Is ' asText
 		emphasizeAllWith: #bold.
-	text := text , (aClass name asText emphasizeAllWith: #(#bold #italic)).
+	text := text
+		, (aClass name asText emphasizeAllWith: #(#bold #italic)).
 	text := text
 		,
-			((' an Abstract class?' , '\' withCRs) asText emphasizeAllWith: #(#bold)).
+			((' an Abstract class?' , '\' withCRs) asText
+				emphasizeAllWith: #(#bold)).
 	text := text
 		,
 			' (an abstract class does not have instance and must have subclasses, while \'
 				withCRs asText.
 	text := text , ' a concret class will have instances and '
-		, self cormasModelClass name , ' will define an attribut called ' asText.
+		, self cormasModelClass name
+		, ' will define an attribut called ' asText.
 	text := text
 		,
 			((CMAbstractModel getterForEntityClass: aClass) asText
 				emphasizeAllWith: #color -> ColorValue red) asText.
 	text := text , ').' asText.
-	^self confirm: text asText
+	^ self confirm: text asText
 ]
 
 { #category : #version }
@@ -3901,23 +3901,6 @@ Cormas >> cormasModelClass [
 { #category : #accessing }
 Cormas >> cormasModelClass: aClass [
 	cormasModelClass := aClass
-]
-
-{ #category : #'model entities' }
-Cormas >> createClassModelNamed: aName [
-	"Create the NameSpace of the new model and its category then create the class of this model"
-	
-	| classBuilder nameSpace |
-	nameSpace := self createSubModelsNameSpace: aName.
-	classBuilder := ClassBuilder new.
-	classBuilder
-		environment: nameSpace;
-		beFixed;
-		superclass: CMAbstractModel;
-		className: aName asSymbol;
-		instVarString: '';
-		category: aName , 'Category'.
-	^classBuilder reviseSystemSilently
 ]
 
 { #category : #'model entities' }
@@ -4043,19 +4026,6 @@ Cormas >> createStep: newClass [
 		compile: 'step\	"to be completed"' withCRs
 		classified: 'control'
 		notifying: nil
-]
-
-{ #category : #'model entities' }
-Cormas >> createSubModelsNameSpace: aName [
-	"Creates and returns the NameSpace under CormasNS.Models    aName : <String>"
-	
-	^Models
-		defineNameSpace: aName asSymbol
-		private: false
-		imports:
-			'private Smalltalk.* 
-						 private CormasNS.Kernel.*'
-		category: aName , 'Category'
 ]
 
 { #category : #deprecated }
@@ -5872,10 +5842,10 @@ Cormas >> reducedCommandsBar: x [
 
 { #category : #visualisation }
 Cormas >> refreshCharts [
-	
-	self displayChartsWin do: [:aChart | aChart refreshAfterStep].
-	Dev todo: 'change this system with a dependence to timestepvalue'.
-	HistogramsInterface allInstances do: [:aChart | aChart refreshAfterStep]
+	self displayChartsWin do: [ :aChart | aChart refreshAfterStep ].
+	self flag:#TODO. "change this system with a dependence to timestepvalue"
+	HistogramsInterface allInstances
+		do: [ :aChart | aChart refreshAfterStep ]
 ]
 
 { #category : #'initialize-release' }
@@ -6473,10 +6443,9 @@ Cormas >> simSubcanvas [
 
 { #category : #accessing }
 Cormas >> simulationWin [
-	
-	Dev todo:
-			'On ne devrait pas conna√Ætre cette fen√™tre (on est un mod√®le ! et en plus on dispose de cette fen√™tre par self mainWindow)'.
-	^simulationWin
+	self flag:#TODO.
+	"On ne devrait pas conna√Ætre cette fen√™tre (on est un mod√®le ! et en plus on dispose de cette fen√™tre par self mainWindow)"
+	^ simulationWin
 ]
 
 { #category : #accessing }

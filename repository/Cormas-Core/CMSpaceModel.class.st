@@ -355,7 +355,7 @@ CMSpaceModel >> cardinal [
 { #category : #'private - accessing' }
 CMSpaceModel >> cardinal: anInteger [
 	cardinal := anInteger.
-	arrayOrigins := Array new: anInteger withAll: nil
+	arrayOrigins := Array new: anInteger
 ]
 
 { #category : #accessing }
@@ -622,7 +622,7 @@ CMSpaceModel >> createCells [
 	"create all the cells and their connexions, and collect them as elementaryEntities collection"
 	
 	| allEse |
-	allEse := Array new: cardinal withAll: nil.
+	allEse := Array new: cardinal.
 	self cormasModelClass cellClass CurrentId: 0.
 	1
 		to: cardinal
@@ -644,8 +644,9 @@ CMSpaceModel >> createCells [
 CMSpaceModel >> createHexagonalCellsFigure [
 	"On enleve le nombre de poly a hauteur et largeur afin de laisser une 
 	bordure"
+
 	"calcul du diametre du cercle"
-	
+
 	| hexagone translation hexagoneInfo delay lineCounter aPov i |
 	self elementaryEntitiesDefaultPovs: nil.
 	hexagoneInfo := self createTopLeftHexagonalCellsFigure.	"SpatialEntityCoordinates new: (hexagoneInfo at: 'object') =>pour inspecter la tete que √ßa a"
@@ -655,25 +656,22 @@ CMSpaceModel >> createHexagonalCellsFigure [
 	lineCounter := 1.
 	i := 1.
 	self line
-		timesRepeat:
-			[lineCounter odd
-				ifTrue: [hexagone := hexagone translatedBy: delay @ 0]
-				ifFalse: [hexagone := hexagone translatedBy: delay negated @ 0].
+		timesRepeat: [ lineCounter odd
+				ifTrue: [ hexagone := hexagone translatedBy: delay @ 0 ]
+				ifFalse: [ hexagone := hexagone translatedBy: delay negated @ 0 ].
 			lineCounter := lineCounter + 1.
 			self column
-				timesRepeat:
-					[aPov := VectorialElementaryPOV new: hexagone asPolyline.
+				timesRepeat: [ aPov := VectorialElementaryPOV new: hexagone asPolyline.
 					aPov name: #nil.
 					aPov
-						entityReference:
-							(EntityReference on: (self elementaryEntities at: i)).
+						entityReference: (EntityReference on: (self elementaryEntities at: i)).
 					self elementaryEntitiesDefaultPovs add: aPov.
 					hexagone := hexagone translatedBy: translation x @ 0.	"SpatialEntityCoordinates new: (hexagone) =>pour inspecter la tete que √ßa a"
-					i := i + 1].
+					i := i + 1 ].
 			hexagone := hexagone
-				translatedBy: (self column * translation x negated) @ translation y].
-	Dev todo:
-			'c''est ici qu''il faut corriger le bug de decalage des cellules en bas √† droite sous vw7.9'
+				translatedBy: (self column * translation x negated) @ translation y ].
+	self flag:#TODO.
+	"c''est ici qu''il faut corriger le bug de decalage des cellules en bas à droite sous vw7.9"
 ]
 
 { #category : #'private - regular polygons' }
@@ -1915,7 +1913,7 @@ CMSpaceModel >> initEntitesSpatiales: aClass [
 	"Creation de la collection d'entites spatiales du modele"
 	"Ca me parait inutile !!"
 	
-	"self cormasModel theEntities: aClass .  Returns a indexedSet of all the instances of aClass collected by cormasModel"
+	"self cormasModel theEntities: aClass .  Returns a orderedCollection of all the instances of aClass collected by cormasModel"
 	"	aggregatesCollection := self cormasModel getterForEntityClass: aClass.
 	self cormasModel class instVarNames detect: [:i | i = aggregatesCollection]
 		ifNone: [self halt].
@@ -1941,134 +1939,65 @@ CMSpaceModel >> initNeighbourhood [
 
 { #category : #'private - regular cells - instance creation' }
 CMSpaceModel >> initNeighbourhood4 [
-	
 	| v i |
-	1
-		to: cardinal
-		do:
-			[:k | 
-			(self elementaryEntities at: k) isNil
-				ifFalse:
-					[v := Array new: 4 withAll: nil.
-					(i := self northCell: k) > 0
-						ifTrue:
-							[v
-								at: 1
-								put: (self elementaryEntities at: i)].
-					(i := self westCell: k) > 0
-						ifTrue:
-							[v
-								at: 2
-								put: (self elementaryEntities at: i)].
-					(i := self southCell: k) > 0
-						ifTrue:
-							[v
-								at: 3
-								put: (self elementaryEntities at: i)].
-					(i := self eastCell: k) > 0
-						ifTrue:
-							[v
-								at: 4
-								put: (self elementaryEntities at: i)].
-					(self elementaryEntities at: k) orderedNeighbourhood: v]]
+	1 to: cardinal do: [ :k | 
+		(self elementaryEntities at: k) isNil
+			ifFalse: [ v := Array new: 4.
+				(i := self northCell: k) > 0
+					ifTrue: [ v at: 1 put: (self elementaryEntities at: i) ].
+				(i := self westCell: k) > 0
+					ifTrue: [ v at: 2 put: (self elementaryEntities at: i) ].
+				(i := self southCell: k) > 0
+					ifTrue: [ v at: 3 put: (self elementaryEntities at: i) ].
+				(i := self eastCell: k) > 0
+					ifTrue: [ v at: 4 put: (self elementaryEntities at: i) ].
+				(self elementaryEntities at: k) orderedNeighbourhood: v ] ]
 ]
 
 { #category : #'private - regular cells - instance creation' }
 CMSpaceModel >> initNeighbourhood6 [
-	
 	| v i |
-	1
-		to: cardinal
-		do:
-			[:k | 
-			(self elementaryEntities at: k) isNil
-				ifFalse:
-					[v := Array new: 6 withAll: nil.
-					(i := self westCellHexa: (self northCell: k)) > 0
-						ifTrue:
-							[v
-								at: 1
-								put: (self elementaryEntities at: i)].
-					(i := self westCell: k) > 0
-						ifTrue:
-							[v
-								at: 2
-								put: (self elementaryEntities at: i)].
-					(i := self westCellHexa: (self southCell: k)) > 0
-						ifTrue:
-							[v
-								at: 3
-								put: (self elementaryEntities at: i)].
-					(i := self eastCellHexa: (self southCell: k)) > 0
-						ifTrue:
-							[v
-								at: 4
-								put: (self elementaryEntities at: i)].
-					(i := self eastCell: k) > 0
-						ifTrue:
-							[v
-								at: 5
-								put: (self elementaryEntities at: i)].
-					(i := self eastCellHexa: (self northCell: k)) > 0
-						ifTrue:
-							[v
-								at: 6
-								put: (self elementaryEntities at: i)].
-					(self elementaryEntities at: k) orderedNeighbourhood: v]]
+	1 to: cardinal do: [ :k | 
+		(self elementaryEntities at: k) isNil
+			ifFalse: [ v := Array new: 6.
+				(i := self westCellHexa: (self northCell: k)) > 0
+					ifTrue: [ v at: 1 put: (self elementaryEntities at: i) ].
+				(i := self westCell: k) > 0
+					ifTrue: [ v at: 2 put: (self elementaryEntities at: i) ].
+				(i := self westCellHexa: (self southCell: k)) > 0
+					ifTrue: [ v at: 3 put: (self elementaryEntities at: i) ].
+				(i := self eastCellHexa: (self southCell: k)) > 0
+					ifTrue: [ v at: 4 put: (self elementaryEntities at: i) ].
+				(i := self eastCell: k) > 0
+					ifTrue: [ v at: 5 put: (self elementaryEntities at: i) ].
+				(i := self eastCellHexa: (self northCell: k)) > 0
+					ifTrue: [ v at: 6 put: (self elementaryEntities at: i) ].
+				(self elementaryEntities at: k) orderedNeighbourhood: v ] ]
 ]
 
 { #category : #'private - regular cells - instance creation' }
 CMSpaceModel >> initNeighbourhood8 [
-	
 	| v i |
-	1
-		to: cardinal
-		do:
-			[:k | 
-			(self elementaryEntities at: k) isNil
-				ifFalse:
-					[v := Array new: 8 withAll: nil.
-					(i := self northCell: k) > 0
-						ifTrue:
-							[v
-								at: 1
-								put: (self elementaryEntities at: i)].
-					(i := self northCell: (self westCell: k)) > 0
-						ifTrue:
-							[v
-								at: 2
-								put: (self elementaryEntities at: i)].
-					(i := self westCell: k) > 0
-						ifTrue:
-							[v
-								at: 3
-								put: (self elementaryEntities at: i)].
-					(i := self southCell: (self westCell: k)) > 0
-						ifTrue:
-							[v
-								at: 4
-								put: (self elementaryEntities at: i)].
-					(i := self southCell: k) > 0
-						ifTrue:
-							[v
-								at: 5
-								put: (self elementaryEntities at: i)].
-					(i := self southCell: (self eastCell: k)) > 0
-						ifTrue:
-							[v
-								at: 6
-								put: (self elementaryEntities at: i)].
-					(i := self eastCell: k) > 0
-						ifTrue:
-							[v
-								at: 7
-								put: (self elementaryEntities at: i)].
-					(i := self northCell: (self eastCell: k)) > 0
-						ifTrue:
-							[v
-								at: 8
-								put: (self elementaryEntities at: i)].
-					(self elementaryEntities at: k) orderedNeighbourhood: v]]
+	1 to: cardinal do: [ :k | 
+		(self elementaryEntities at: k) isNil
+			ifFalse: [ v := Array new: 8.
+				(i := self northCell: k) > 0
+					ifTrue: [ v at: 1 put: (self elementaryEntities at: i) ].
+				(i := self northCell: (self westCell: k)) > 0
+					ifTrue: [ v at: 2 put: (self elementaryEntities at: i) ].
+				(i := self westCell: k) > 0
+					ifTrue: [ v at: 3 put: (self elementaryEntities at: i) ].
+				(i := self southCell: (self westCell: k)) > 0
+					ifTrue: [ v at: 4 put: (self elementaryEntities at: i) ].
+				(i := self southCell: k) > 0
+					ifTrue: [ v at: 5 put: (self elementaryEntities at: i) ].
+				(i := self southCell: (self eastCell: k)) > 0
+					ifTrue: [ v at: 6 put: (self elementaryEntities at: i) ].
+				(i := self eastCell: k) > 0
+					ifTrue: [ v at: 7 put: (self elementaryEntities at: i) ].
+				(i := self northCell: (self eastCell: k)) > 0
+					ifTrue: [ v at: 8 put: (self elementaryEntities at: i) ].
+				(self elementaryEntities at: k) orderedNeighbourhood: v ] ]
 ]
 
 { #category : #'private - init' }
@@ -2488,11 +2417,12 @@ CMSpaceModel >> noticeChange: aChange [
 { #category : #'private - notification' }
 CMSpaceModel >> noticeChanges: someChanges [
 	"notice some grouped changes"
-	
-	someChanges isEmpty ifTrue: [^nil].
+
+	someChanges isEmpty
+		ifTrue: [ ^ nil ].
 	self myDependents update: #noticeChanges with: someChanges from: self.
-	Dev todo:
-			'g√©rer ici les coupures r√©seaux en faisant des v√©rifications au niveau de myDependents'
+	self flag:#TODO.
+	"g√©rer ici les coupures r√©seaux en faisant des v√©rifications au niveau de myDependents"
 ]
 
 { #category : #'private - display' }

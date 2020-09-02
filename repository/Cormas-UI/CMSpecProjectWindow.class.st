@@ -4,7 +4,7 @@ Class {
 	#instVars : [
 		'simWindow'
 	],
-	#category : 'Cormas-UI-Project'
+	#category : #'Cormas-UI-Project'
 }
 
 { #category : #specs }
@@ -142,6 +142,24 @@ CMSpecProjectWindow >> initializeSimulationSubMenu: group [
 ]
 
 { #category : #initialization }
+CMSpecProjectWindow >> initializeSubscriptions [
+
+	self projectAnnouncer
+		when: CMProjectOpenAnnouncement
+		send: #updateStateOpened
+		to: self.
+	self projectAnnouncer
+		when: CMProjectNewAnnouncement
+		send: #updateStateNew
+		to: self.
+	self projectAnnouncer
+		when: CMProjectUpdateAnnouncement, CMProjectRenameAnnouncement
+		do: [ : ann | 
+				self windowTitle: self formattedWindowTitle.
+				self updateTitle. ]
+]
+
+{ #category : #initialization }
 CMSpecProjectWindow >> initializeVisualizationSubMenu: group [
 
 	group
@@ -155,7 +173,9 @@ CMSpecProjectWindow >> initializeVisualizationSubMenu: group [
 CMSpecProjectWindow >> initializeWidgets [
 	" Private - See superimplementor's comment "
 
-	self initializeApplication.
+	self 
+		initializeApplication;
+		initializeSubscriptions.
 	super initializeWidgets.
 	self simWindow: ((CMSpecSimulationContainer for: self projectManager)
 		owner: self;
@@ -451,6 +471,12 @@ CMSpecProjectWindow >> openVizSpace [
 	viz window extent: viz spaceView canvas extent + (20 @ 20).
 	viz spaceView canvas focusOnCenterScaled.
 	viz spaceView signalUpdate
+]
+
+{ #category : #accessing }
+CMSpecProjectWindow >> projectAnnouncer [
+
+	^ self projectManager announcer
 ]
 
 { #category : #accessing }
@@ -1166,6 +1192,22 @@ CMSpecProjectWindow >> updateSimulationWindow [
 ]
 
 { #category : #callbacks }
+CMSpecProjectWindow >> updateStateNew [
+	" Private - See superimplementor's comment "
+
+	super updateStateNew.
+	self 
+		menuEnableProgrammingGroup;
+		menuEnableSimulationGroup;
+		menuEnableToolsGroup;
+		menuEnableVisualizationGroup;
+		menuEnableHelpGroup;
+		updateSimulationWindow;
+		windowTitle: self formattedWindowTitle;
+		updateTitle.
+]
+
+{ #category : #callbacks }
 CMSpecProjectWindow >> updateStateOpened [
 	" Private - See superimplementor's comment "
 
@@ -1176,7 +1218,9 @@ CMSpecProjectWindow >> updateStateOpened [
 		menuEnableToolsGroup;
 		menuEnableVisualizationGroup;
 		menuEnableHelpGroup;
-		updateSimulationWindow
+		updateSimulationWindow.
+	self windowTitle: self formattedWindowTitle.
+	self updateTitle.
 ]
 
 { #category : #callbacks }

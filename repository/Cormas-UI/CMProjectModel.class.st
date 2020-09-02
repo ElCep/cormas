@@ -65,17 +65,20 @@ CMProjectModel >> cormasModel: aCormasModel [
 { #category : #accessing }
 CMProjectModel >> cormasModelAuthors: aString [ 
 	" See comment in CMProjectManager>>cormasModelAuthors: "
-	
-	self codeGenerator 
+
+	self codeGenerator
 		generateMethod: aString 
-		selector: #authors 
+		selector: #cmAuthors 
 		inClass: self cormasModelClass class.
 
 ]
 
 { #category : #accessing }
 CMProjectModel >> cormasModelClass [
+	" Answer the receiver's model, a subclass of <CMAbstractModel> "
+
 	^ cormasModelClass
+		ifNil: [ cormasModelClass := self createClassModelNamed: self defaultStdCormasModelName ]
 ]
 
 { #category : #accessing }
@@ -93,17 +96,6 @@ CMProjectModel >> cormasModelCreationDate: aString [
 		selector: #creationDate 
 		inClass: self cormasModelClass class.
 
-
-]
-
-{ #category : #accessing }
-CMProjectModel >> cormasModelEmails: aString [ 
-	" See comment in CMProjectManager>>cormasModelEmails: "
-
-	self codeGenerator 
-		generateMethod: aString 
-		selector: #emails 
-		inClass: self cormasModelClass class.
 
 ]
 
@@ -136,18 +128,47 @@ CMProjectModel >> cormasModelVersion: aString [
 
 { #category : #accessing }
 CMProjectModel >> createClassModelNamed: modelName [
-	" Generate a new class named modelName. Answer the new generated <Class> "
+	" Generate a new class named modelName. modelName should be in the format CMXXXModel. See defaultCormasModelName for details.
+	Answer the new generated <Class> "
 	
 	| validClassName |
 	
 	validClassName := self validateCormasModelName: modelName.
-	self codeGenerator 
-		targetClassCategory: validClassName , 'Category';
+	self codeGenerator
+		targetClassCategory: self defaultStdCormasCategoryName;
 		targetClass: validClassName;
 		generateClassNamed: validClassName 
 		superclass: CMAbstractModel.
 	self codeGenerator generateMethods.
 	^ Smalltalk at: validClassName asSymbol
+]
+
+{ #category : #defaults }
+CMProjectModel >> defaultCormasModelName [
+	" Answer a default model <String> name for unnamed model's creation case "
+
+	^ 'Unnamed'
+]
+
+{ #category : #defaults }
+CMProjectModel >> defaultStdCormasCategoryName [
+	" Answer a <String> in the format CMXXXModel where XXX is the user provided name of the receiver's model "
+	
+	^ String streamContents: [ : stream |
+			stream
+				<< 'Cormas-Model-';
+				<< self userProvidedName ]
+]
+
+{ #category : #defaults }
+CMProjectModel >> defaultStdCormasModelName [
+	" Answer a <String> in the format CMXXXModel where XXX is the user provided name of the receiver's model "
+	
+	^ String streamContents: [ : stream |
+			stream
+				<< 'CM';
+				<< self userProvidedName;
+				<< 'Model' ]
 ]
 
 { #category : #testing }
@@ -161,7 +182,7 @@ CMProjectModel >> hasCormasModelClass [
 CMProjectModel >> initializeForModel: aCormasModel [
 	" Private - Set up the cormas model for the receiver "
 
-	self initializeNamed: 'Unnamed'.
+	self initializeNamed: self defaultCormasModelName.
 	self cormasModel: aCormasModel.
 	self cormasModelClass: aCormasModel class.
 ]
@@ -180,6 +201,13 @@ CMProjectModel >> projectName [
 	" Answer a <String> with the receiver's model name "
 
 	^ self cormasModelName
+]
+
+{ #category : #accessing }
+CMProjectModel >> userProvidedName [
+	" Answer a <String> with the receiver's name as provided by the user on creation "
+
+	^ self info infoName
 ]
 
 { #category : #accessing }
