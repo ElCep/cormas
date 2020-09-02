@@ -91,6 +91,13 @@ CormasTest >> testMax [
 ]
 
 { #category : #tests }
+CormasTest >> testMaxOfAmongObjects [
+	self
+		assert: (Cormas maxOf: #abs amongObjects: #(-2 -1 0 1 2))
+		equals: 2
+]
+
+{ #category : #tests }
 CormasTest >> testMaximumOfNumbers [
 	| aCollection |
 	aCollection := #(3 1 5 4 2).
@@ -129,7 +136,7 @@ CormasTest >> testMinimumOfNumbers [
 ]
 
 { #category : #tests }
-CormasTest >> testMixt [
+CormasTest >> testMix [
 	| aCollection |
 	aCollection := #(1 2 3 4 5).
 	self assert: ((Cormas mix: aCollection) includes: 1)
