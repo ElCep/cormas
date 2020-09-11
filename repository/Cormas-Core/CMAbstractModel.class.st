@@ -1102,9 +1102,9 @@ CMAbstractModel class >> spaceModel_default [
 
 { #category : #'managing classes' }
 CMAbstractModel class >> spatialClasses [
-	" Answer a <Collection> of spatial classes of the model. Aldready configured in #initializeWithoutVS "
-	"self allClassesInPackage select: [ :aClass | aClass inheritsFrom: CMSpatialEntityCell ]"
-	^ spatialClasses
+	" Answer a <Collection> of spatial classes of the model. Aldready configured in #initializeWithoutVS (??)"
+	^ self allClassesInPackage select: [ :aClass | aClass inheritsFrom: CMSpatialEntityCell ]
+	
 ]
 
 { #category : #accessing }
@@ -4155,7 +4155,11 @@ CMAbstractModel >> simNumero [
 { #category : #'accessing  - projectManager' }
 CMAbstractModel >> simWindow [
 
-^self projectManager ifNil:[nil] ifNotNil:[:pm| pm projectWindow simWindow simWindow ]
+	^ self projectManager 
+		ifNil: [ nil ] 
+		ifNotNil: [ : pm | pm projectWindow 
+			ifNil: [ nil ]
+			ifNotNil: [ : pw | pw simWindow simWindow ] ]
 ]
 
 { #category : #'- pov and info' }
