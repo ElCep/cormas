@@ -491,10 +491,9 @@ CMSpecSimulationWindow >> replay1StoredStepButtonMorph [
 CMSpecSimulationWindow >> replayAStoredSimAction [
 	" #openReplayWin "
 
-	self halt.
-	self application hasStoredSimulations
+	self currentProject hasStoredSimulations
 		ifFalse: [ self alertMessage: self translator tNoStoredSim ]
-		ifTrue: [ self requestStoredSims: self application storedSimulations ]
+		ifTrue: [ self requestStoredSims: self projectManager storedSimulations ]
 
 ]
 

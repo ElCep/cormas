@@ -23,18 +23,6 @@ Class {
 	#category : #'Cormas-UI-Project'
 }
 
-{ #category : #'code-generation' }
-CMProjectManager >> addNewClassType: aString inheritingFrom: aClass name: nameString initProtocol: initBoolean stepProtocol: stepBoolean [
-
-	self codeGenerator 
-		addNewClassType: aString 
-		inheritingFrom: aClass 
-		name: nameString 
-		initProtocol: initBoolean 
-		stepProtocol: stepBoolean 
-
-]
-
 { #category : #accessing }
 CMProjectManager >> applicationExtension [
 	" See comment in #applicationExtension "
@@ -147,7 +135,12 @@ CMProjectManager >> createProject: projectName in: aCMApplicationProject [
 
 	| newProject |
 	
-	newProject := aCMApplicationProject createProjectNamed: projectName.
+	newProject := 
+		(aCMApplicationProject createProjectNamed: projectName)
+			projectManager: self;
+			initializeForModel: (self createClassModelNamed: projectName asValidCormasClassName) new
+				named: projectName asValidCormasClassName;
+				yourself.
 	aCMApplicationProject currentProject: newProject.
 	self updateNewProject: projectName.
 	self fsm handleEvent: #actionNew.
@@ -260,16 +253,11 @@ CMProjectManager >> modelProbesMethods [
 ]
 
 { #category : #callbacks }
-CMProjectManager >> openEditAttributes [
-
-	self projectWindow openEditAttributes.
-]
-
-{ #category : #callbacks }
 CMProjectManager >> openImageProject: modelName [
 	" Open the project of the modelClass "
 
 	self currentProject: (CMProjectModel basicNew
+		projectManager: self;
 		initializeForModel: (self class environment at: modelName) new
 			named: modelName;
 			yourself)
@@ -334,7 +322,9 @@ CMProjectManager >> requestModelNameLocation [
 	widget
 		title: self translator tWhichOpeningLocation;
 		items: self cormasOpenLocations.
-	widget openDialogWithSpec modalRelativeTo: self currentWorld.
+	widget openDialogWithSpec 
+		cancelAction: [ widget selectItem: nil ];	
+		modalRelativeTo: self currentWorld.
 	^ widget selectedItem		
 		
 ]
@@ -386,6 +376,8 @@ CMProjectManager >> requestModelOpenFromLocalImage [
 	" Open a Cormas model. Answer project creation status, <true> if project was opened successfully "
 
 	| mName |
+	
+	openStatus := false.
 	(mName := self requestModelOpenDialogFromLocalImage) ifNotNil: [ :modelName | openStatus := true ].
 	openStatus
 		ifTrue: [ 
