@@ -1,6 +1,5 @@
 "
-Baseline of project CORMAS: https://github.com/cormas/cormas
-
+3+09:00 Cormas.image priorSource: 100
 "
 Class {
 	#name : #BaselineOfCormas,
@@ -26,8 +25,8 @@ BaselineOfCormas >> baseline: spec [
 				baseline: 'FileDialog'
 					with: [ spec repository: 'github://peteruhnak/file-dialog/repository' ];
 				baseline: 'ProjectFramework'
-					with: [ spec
-						repository: 'github://hernanmd/ProjectFramework/repository' ];
+					with:
+						[ spec repository: 'github://hernanmd/ProjectFramework/repository' ];
 				baseline: 'CodeGenerator'
 					with: [ spec repository: 'github://hernanmd/CodeGenerator/repository' ];
 				baseline: 'Roassal2'
@@ -35,9 +34,13 @@ BaselineOfCormas >> baseline: spec [
 				baseline: 'NeoCSV'
 					with: [ spec repository: 'github://svenvc/NeoCSV/repository' ];
 				baseline: 'PolyMath'
-					with: [ spec repository: 'github://PolyMathOrg/PolyMath/src' ].
+					with: [ spec repository: 'github://PolyMathOrg/PolyMath/src' ];
+				baseline: 'GitBridge'
+					with: [ spec repository: 'github://jecisc/GitBridge/src' ];
+				baseline: 'ESRIASCIIRaster'
+					with: [ spec repository: 'github://pharo-GIS/ESRI-ASCII-Raster/' ].
 			spec
-				package: 'Cormas-Core' with: [ spec requires: #('PolyMath') ];
+				package: 'Cormas-Core' with: [ spec requires: #('PolyMath' 'PetitParser' 'NeoCSV' 'GitBridge' 'ESRIASCIIRaster') ];
 				package: 'Cormas-Model-Conway';
 				package: 'Cormas-Model-DemoAggregates';
 				package: 'Cormas-Model-Diffuse';
@@ -139,18 +142,6 @@ CMSpecProjectWindow allInstances } allSatisfy: #isEmpty.'
 ]
 
 { #category : #doits }
-BaselineOfCormas >> ensureMetacelloFileDownload [
-	Metacello new
-		baseline: 'OSSubprocess';
-		repository: 'github://pharo-contributions/OSSubprocess/repository';
-		load.
-	Metacello new
-		baseline: 'MetacelloFileDownload';
-		repository: 'github://hernanmd/MetacelloFileDownload';
-		load
-]
-
-{ #category : #doits }
 BaselineOfCormas >> findCurrentOwner [
 	" Answer a <String> with the name of the current CORMAS repository 'owner', this is the username from where the current image clone of cormas was installed. If no registry entries are detected, defaults to the cormas repository name "
 
@@ -196,21 +187,6 @@ BaselineOfCormas >> platformAssetsUrls [
 ]
 
 { #category : #doits }
-BaselineOfCormas >> platformFilesUrl [
-	" Private - See superimplementor's comment "
-
-	^ self platformAssetsUrls collect: [ :urlPath | 
-			String streamContents: [ :stream | 
-					stream
-						nextPutAll: urlPath;
-						nextPutAll: 'assets';
-						nextPutAll:
-							(Smalltalk os isWin32
-								ifTrue: [ '.zip' ]
-								ifFalse: [ '.tar.gz' ]) ] ]
-]
-
-{ #category : #doits }
 BaselineOfCormas >> postLoad [
 	" Private - Execute post install actions "
 
@@ -224,7 +200,8 @@ BaselineOfCormas >> postLoad [
 ]
 
 { #category : #doits }
-BaselineOfCormas >> preLoadConfigurationforPharo7 [
+BaselineOfCormas >> preLoadForPharo7 [
+	" Private - Execute post install actions "
 
 	Smalltalk tools debugger
 		alwaysOpenFullDebugger: true;
@@ -233,49 +210,19 @@ BaselineOfCormas >> preLoadConfigurationforPharo7 [
 ]
 
 { #category : #doits }
-BaselineOfCormas >> preLoadConfigurationforPharo8 [
-
-	Smalltalk tools debugger
-		filterCommonMessageSends: true.
-	PharoLightTheme beCurrent
-]
-
-{ #category : #doits }
-BaselineOfCormas >> preLoadConfigurationforPharo9 [
-
-	Smalltalk tools debugger
-		filterCommonMessageSends: true.
-	PharoLightTheme beCurrent
-]
-
-{ #category : #doits }
-BaselineOfCormas >> preLoadForPharo7 [
-	" Private - Execute post install actions "
-
-	self ensureMetacelloFileDownload.
-	super preLoad.
-	self preLoadConfigurationforPharo7 	
-
-]
-
-{ #category : #doits }
 BaselineOfCormas >> preLoadForPharo8 [
 	" Private - Execute post install actions "
 
-	self ensureMetacelloFileDownload.
-	super preLoad.
-	self preLoadConfigurationforPharo8	
-
+	Smalltalk tools debugger filterCommonMessageSends: true.
+	PharoLightTheme beCurrent
 ]
 
 { #category : #doits }
 BaselineOfCormas >> preLoadForPharo9 [
 	" Private - Execute post install actions "
 
-	self ensureMetacelloFileDownload.
-	super preLoad.
-	self preLoadConfigurationforPharo9	
-
+	Smalltalk tools debugger filterCommonMessageSends: true.
+	PharoLightTheme beCurrent
 ]
 
 { #category : #doits }
