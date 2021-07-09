@@ -21,120 +21,8 @@ Class {
 	#classInstVars : [
 		'standardCellBounds'
 	],
-	#category : 'Cormas-Core-Others'
+	#category : #'Cormas-Core-Others'
 }
-
-{ #category : #colors }
-PovSetter class >> colorChooser [
-	"open a Color chooser.
-test it :    PovSetter colorChooser  "
-	
-	| dialog |
-	dialog := ColorSelectionDialog new.
-	dialog selection.
-	dialog open.
-	dialog accept value ifFalse: [^nil].
-	^dialog selection
-]
-
-{ #category : #resources }
-PovSetter class >> menuGroupesOSObservationSimulation [
-	"Tools.MenuEditor new openOnClass: self andSelector: #menuGroupesOSObservationSimulation"
-	
-	<resource: #menu>
-	^#(Menu #(#(MenuItem 
-		#rawLabel: #(UserMessage 
-			#key: #add 
-			#defaultString: 'Add') 
-		#value: #groupeOSVisible) #(MenuItem 
-		#rawLabel: #(UserMessage 
-			#key: #extract 
-			#defaultString: 'Remove') 
-		#value: #groupeOSInvisible)) #(2) nil) decodeAsLiteralArray
-]
-
-{ #category : #resources }
-PovSetter class >> menuImage [
-	"MenuEditor new openOnClass: self andSelector: #menuImage"
-	
-	<resource: #menu>
-	^#(#Menu #(#(#MenuItem 
-		#rawLabel: #(#UserMessage 
-			#key: #emptypolygone 
-			#defaultString: 'Polygone Vide') 
-		#value: #strokedPolygon) #(#MenuItem 
-		#rawLabel: #(#UserMessage 
-			#key: #fullpolygone 
-			#defaultString: 'Polygone Plein') 
-		#value: #filledPolygon) #(#MenuItem 
-		#rawLabel: #(#UserMessage 
-			#key: #numberofsegments 
-			#defaultString: 'Nb Segments') 
-		#value: #nbSegments) #(#MenuItem 
-		#rawLabel: #(#UserMessage 
-			#key: #linethickness 
-			#defaultString: 'Epaisseur Trait') 
-		#value: #lineWidth)) #(2 2) nil) decodeAsLiteralArray
-]
-
-{ #category : #resources }
-PovSetter class >> menuInfo [
-	"Tools.MenuEditor new openOnClass: self andSelector: #menuInfo"
-	
-	<resource: #menu>
-	^#(Menu #(#(MenuItem 
-		#rawLabel: #(UserMessage 
-			#key: #add 
-			#defaultString: 'Add...') 
-		#value: #addInfo) #(MenuItem 
-		#rawLabel: #(UserMessage 
-			#key: #modify 
-			#defaultString: 'Modify...') 
-		#value: #modifyInfo) #(MenuItem 
-		#rawLabel: #(UserMessage 
-			#key: #delete 
-			#defaultString: 'Delete') 
-		#value: #removeInfo)) #(2 1) nil) decodeAsLiteralArray
-]
-
-{ #category : #resources }
-PovSetter class >> menuPDV [
-	"Tools.MenuEditor new openOnClass: self andSelector: #menuPDV"
-	
-	<resource: #menu>
-	^#(Menu #(#(MenuItem 
-		#rawLabel: #(UserMessage 
-			#key: #add 
-			#defaultString: 'Add...') 
-		#nameKey: #addx 
-		#value: #addPov) #(MenuItem 
-		#rawLabel: 'Add Pov on attribute' 
-		#value: #addPovOnAttribute) #(MenuItem 
-		#rawLabel: #(UserMessage 
-			#key: #modify 
-			#defaultString: 'Modify...') 
-		#value: #modifyPov) #(MenuItem 
-		#rawLabel: #(UserMessage 
-			#key: #delete 
-			#defaultString: 'Delete') 
-		#value: #removePov)) #(3 1) nil) decodeAsLiteralArray
-]
-
-{ #category : #resources }
-PovSetter class >> menuSymbolePDV [
-	"Tools.MenuEditor new openOnClass: self andSelector: #menuSymbolePDV"
-	
-	<resource: #menu>
-	^#(Menu #(#(MenuItem 
-		#rawLabel: #(UserMessage 
-			#key: #add 
-			#defaultString: 'Add') 
-		#value: #addSymbolPov) #(MenuItem 
-		#rawLabel: #(UserMessage 
-			#key: #delete 
-			#defaultString: 'Remove') 
-		#value: #removeSymbolPov)) #(2) nil) decodeAsLiteralArray
-]
 
 { #category : #'instance creation' }
 PovSetter class >> newOnClass: aClass [
@@ -544,114 +432,6 @@ PovSetter class >> standardCellBounds [
 		extent: 51 @ 51
 ]
 
-{ #category : #action }
-PovSetter >> addInfo [
-	"adding a new POV method"
-	
-	| aName |
-	aName := (Dialog
-		request: self infoName
-		initialAnswer: 'info_'
-		onCancel: [^self]) asSymbol.
-	self modifyInfo: aName.
-	self listInfo list
-		addFirst: aName asString , ' (' , selectedClass name asString , ')'.
-	self listInfo selectionIndex: 1
-]
-
-{ #category : #action }
-PovSetter >> addPov [
-	"adding a new POV method"
-	
-	| aName |
-	aName := (Dialog
-		request: self povName
-		initialAnswer: ''
-		onCancel: [^self]) asSymbol.
-	self modifyPov: aName.
-	self listMethods list
-		addFirst: aName asString , ' (' , selectedClass name asString , ')'.
-	self listMethods selectionIndex: 1
-]
-
-{ #category : #action }
-PovSetter >> addPovOnAttribute [
-	
-	| list choice values valuesTextLine |
-	list := DefaultAttributesSetter attributsFromClass: selectedClass.
-	choice := Dialog
-		choose: 'Create Pov on which attribute?'
-		fromList: list
-		values: list
-		lines: 8
-		cancel: [nil].
-	choice ifNil: [^nil].
-	self createPovOnAttribute: choice.
-	self cormas currentSimulation
-		ifNotNil:
-			[values := (self cormas currentSimulation allTheEntities: selectedClass)
-				collect: [:entity | entity perform: choice asSymbol]].
-	(values isNil or: [values size = 1 and: [values first isNil]])
-		ifFalse:
-			[valuesTextLine := ''.
-			values do: [:v | valuesTextLine := valuesTextLine , v printString , ' '].
-			(self cormas
-				confirm:
-					'Cormas found the following values for the attribute ' , choice ,
-							'.
-' , valuesTextLine ,
-							'
-Do you want to create the symbols associated to these values?')
-				ifTrue:
-					[values
-						do:
-							[:v | 
-							v isSymbol
-								ifTrue: [self addSymbolPov: v asString]
-								ifFalse:
-									[v isString
-										ifTrue: [self addSymbolPov: v]
-										ifFalse:
-											[v isLiteral ifTrue: [self addSymbolPov: choice , v printString]]]]]]
-]
-
-{ #category : #action }
-PovSetter >> addSymbolPov [
-	
-	| aString |
-	selectedClass isNil ifTrue: [^nil].
-	aString := Cormas current
-		request:
-			(UserMessage defaultString: 'Enter a new symbol' key: #enterNewSymbol)
-				asString.
-	aString = '' ifTrue: [^nil].
-	[aString first = $#]
-		whileTrue:
-			[aString := Cormas removeFirstCharacterOfString: aString.
-			aString = '' ifTrue: [^nil]].
-	^self addSymbolPov: aString
-]
-
-{ #category : #action }
-PovSetter >> addSymbolPov: aString [
-	
-	| aList |
-	(self listSymbols list includes: aString)
-		ifTrue:
-			[^Cormas current
-				warn:
-					(UserMessage defaultString: 'This symbol already exists !!!' key:
-							#alreadyExistingSymbol) asString].
-	aList := listSymbols list copy.
-	aList add: aString.
-	aList sort.
-	self listSymbols setList: aList selecting: aString.
-	selectedClass colorsDict
-		at: aString asSymbol
-		put: selectedClass defaultColor.
-	^aString
-]
-
 { #category : #aspects }
 PovSetter >> blueSlider [
 	"This method was generated by UIDefiner.  Any edits made here
@@ -682,30 +462,6 @@ PovSetter >> close [
 	self closeRequest
 ]
 
-{ #category : #changed }
-PovSetter >> colorChanged [
-	
-	| color |
-	self builder isNil ifTrue: [^self].
-	listSymbols selection isNil
-		ifTrue:
-			[^self cormas
-				warn:
-					(UserMessage defaultString: 'Select a symbol !!!' key: #selectSymbol)
-						asString].
-	color := ColorValue
-		red: redHolder value
-		green: greenHolder value
-		blue: blueHolder value.
-	color := ColorValue
-		hue: color hue
-		saturation: color saturation
-		brightness: brightnessHolder value.
-	(self builder componentAt: #boutonAppliquer) enable.
-	couleur := color.
-	^color
-]
-
 { #category : #accessing }
 PovSetter >> cormas [
 	
@@ -734,12 +490,6 @@ PovSetter >> createPovOnAttribute: att [
 	^self ' , att , '') withCRs
 		classified: '* pov'
 		notifying: nil
-]
-
-{ #category : #colors }
-PovSetter >> defaultColor [
-	
-	^ColorValue blue
 ]
 
 { #category : #colors }
@@ -888,16 +638,6 @@ PovSetter >> doYellow [
 	brightnessSlider value: 1
 ]
 
-{ #category : #action }
-PovSetter >> editMethod: aSelector fromClass: aClass [
-	
-	| browser |
-	browser := RefactoringBrowser open.
-	browser navigator selectClass: aClass.
-	browser navigator beHierarchy.
-	browser navigator setSelector: aSelector
-]
-
 { #category : #aspects }
 PovSetter >> greenSlider [
 	"This method was generated by UIDefiner.  Any edits made here
@@ -922,61 +662,6 @@ PovSetter >> imageOS [
 							(Rectangle
 								origin: 0 @ 0
 								extent: 87 @ 87) asPolyline)]
-]
-
-{ #category : #'user messages' }
-PovSetter >> infoName [
-	
-	^UserMessage defaultString: ' info name : ' key: #infoName
-]
-
-{ #category : #util }
-PovSetter >> inheritedMethodsFrom: aClass category: aCat [
-	"Retourne la liste des methodes des superclasses de aClass en s'arr√™tant √† Entity
-	On rajoute povID et povClassName"
-	
-	| aList tmp classes |
-	aList := OrderedCollection new.
-	classes := aClass allSuperclasses copy.
-	classes removeAll: Entity allSuperclasses.
-	classes
-		do:
-			[:uneClasse | 
-			tmp := uneClasse organization listAtCategoryNamed: aCat.	"specific case of Entity and #pov"	"no need anymore since the generic category has been renamed '* pov'"	"(uneClasse = Entity and: [aCat = #pov]) 
-				ifTrue:[tmp := (Entity organization listAtCategoryNamed: aCat) select: [:sel | sel = #povId | (sel = #povClassName)]]."
-			1
-				to: tmp size
-				do:
-					[:i | 
-					tmp
-						at: i
-						put: (tmp at: i) asString , ' (' , uneClasse name asString , ')'].
-			aList addAll: tmp].
-	^aList
-]
-
-{ #category : #'initialize-release' }
-PovSetter >> initialize [
-	
-	| ctr |
-	super initialize.
-	ctr := ControllerWithMenu new.
-	ctr menuHolder: (self menuFor: #menuImage) asValue.
-	ctr performer: self.
-	(self componentFor: #imageOS) controller: ctr.
-	redHolder := 0 asValue.
-	greenHolder := 0 asValue.
-	blueHolder := 0 asValue.
-	brightnessHolder := 1 asValue.
-	redHolder onChangeSend: #colorChanged to: self.
-	greenHolder onChangeSend: #colorChanged to: self.
-	blueHolder onChangeSend: #colorChanged to: self.
-	brightnessHolder onChangeSend: #colorChanged to: self.
-	redSlider := RangeAdaptor on: redHolder start: 0 stop: 1 grid: 0.01.
-	greenSlider := RangeAdaptor on: greenHolder start: 0 stop: 1 grid: 0.01.
-	blueSlider := RangeAdaptor on: blueHolder start: 0 stop: 1 grid: 0.01.
-	brightnessSlider := RangeAdaptor on: brightnessHolder start: 0 stop: 1
-		grid: 0.01
 ]
 
 { #category : #aspects }
@@ -1089,23 +774,10 @@ PovSetter >> modifyPov: povName [
 	self editMethod: povName fromClass: selectedClass
 ]
 
-{ #category : #'user messages' }
-PovSetter >> noSelectedEntity [
-	
-	^UserMessage defaultString: 'Select an entity first !!! ' key:
-			#noSelectedEntity
-]
-
 { #category : #'initialize-release' }
 PovSetter >> postBuildWith: aBuilder [
 	
 	EntityPOV rMax: (imageOS bounds width min: imageOS bounds height)
-]
-
-{ #category : #'user messages' }
-PovSetter >> povName [
-	
-	^UserMessage defaultString: ' pov name : ' key: #povName
 ]
 
 { #category : #aspects }
@@ -1134,23 +806,6 @@ PovSetter >> removeBrackets: aNom [
 	^unNom
 ]
 
-{ #category : #action }
-PovSetter >> removeInfo [
-	
-	| unSymb |
-	self listInfo selection notNil
-		ifTrue:
-			[(self cormas
-				confirm:
-					(UserMessage defaultString: 'Delete the method ' key: #removeMethod)
-						asString , ' ' , self listInfo selection , ' ?')
-				ifTrue:
-					[unSymb := (self removeBrackets: listInfo selection) asSymbol.
-					selectedClass removeSelector: unSymb.
-					self listInfo list remove: listInfo selection.
-					self listInfo selectionIndex: 0]]
-]
-
 { #category : #util }
 PovSetter >> removeParentheses: aNom [
 	
@@ -1163,43 +818,6 @@ PovSetter >> removeParentheses: aNom [
 		to: aNom size
 		with: ''.
 	^unNom
-]
-
-{ #category : #action }
-PovSetter >> removePov [
-	
-	| unSymb |
-	self listMethods selection notNil
-		ifTrue:
-			[(self cormas
-				confirm:
-					(UserMessage defaultString: 'Delete the method ' key: #removeMethod)
-						asString , self listMethods selection , ' ?')
-				ifTrue:
-					[unSymb := (self removeBrackets: listMethods selection) asSymbol.
-					selectedClass removeSelector: unSymb.
-					self listMethods list remove: listMethods selection.
-					self listMethods selectionIndex: 0]]
-]
-
-{ #category : #action }
-PovSetter >> removeSymbolPov [
-	
-	| selectedSymbol |
-	self listSymbols selection isNil
-		ifFalse:
-			[(self cormas
-				confirm:
-					(UserMessage defaultString: 'Remove this symbol ?' key:
-							#confirmRemoveSymbol) asString)
-				ifTrue:
-					[selectedSymbol := self listSymbols selection.
-					self removeClassMethodForSymbol: selectedSymbol.
-					selectedClass colorsDict
-						removeKey: selectedSymbol asSymbol
-						ifAbsent: [nil].	"selectedClass povDict removeKey: selectedSymbol ifAbsent: [nil].  uniquement pour les agents"
-					self removeSymbolPov: selectedSymbol.
-					^selectedSymbol]]
 ]
 
 { #category : #action }
@@ -1224,69 +842,6 @@ PovSetter >> selectedClass [
 PovSetter >> selectedMethod [
 	
 	^self listMethods selection
-]
-
-{ #category : #'initialize-release' }
-PovSetter >> setListInfo [
-	
-	| liste tmp |
-	liste := List new.
-	liste
-		addAll: (self inheritedMethodsFrom: selectedClass category: #'* info').
-	liste addFirst: '----'.
-	tmp := (selectedClass organization listAtCategoryNamed: #'* info')
-		asOrderedCollection.
-	tmp addAll: (selectedClass organization listAtCategoryNamed: #info).	"to ensure compatibility for models implemented with previous Cormas versions"
-	1
-		to: tmp size
-		do:
-			[:i | 
-			tmp
-				at: i
-				put: (tmp at: i) asString , ' (' , selectedClass name asString , ')'].
-	liste addAllFirst: tmp.
-	self listInfo list: liste.
-	liste isEmpty ifFalse: [listInfo selection: listInfo list first]	"listMethods selectionIndexHolder onChangeSend: #listMethodsChanged to: self."
-]
-
-{ #category : #'initialize-release' }
-PovSetter >> setListMethods [
-	
-	| liste tmp |
-	liste := List new.
-	liste
-		addAll: (self inheritedMethodsFrom: selectedClass category: #'* pov').
-	liste addFirst: '----'.
-	tmp := (selectedClass organization listAtCategoryNamed: #'* pov')
-		asOrderedCollection.
-	tmp addAll: (selectedClass organization listAtCategoryNamed: #pov).	"to ensure compatibility for models implemented with previous Cormas versions"
-	1
-		to: tmp size
-		do:
-			[:i | 
-			tmp
-				at: i
-				put: (tmp at: i) asString , ' (' , selectedClass name asString , ')'].
-	liste addAllFirst: tmp.
-	self listMethods list: liste.
-	liste isEmpty ifFalse: [listMethods selection: listMethods list first].
-	listMethods selectionIndexHolder onChangeSend: #listMethodsChanged to:
-			self
-]
-
-{ #category : #'initialize-release' }
-PovSetter >> setListSymbols [
-	
-	| liste |
-	listSymbols selectionIndexHolder onChangeSend: #listSymbolsChanged to:
-			self.
-	liste := List new.
-	liste
-		addAll: (selectedClass colorsDict keys collect: [:pov | pov asString]).
-	(liste includes: selectedClass name asString)
-		ifFalse: [liste addFirst: selectedClass name asString].
-	self listSymbols list: liste sort.
-	liste isEmpty ifFalse: [listSymbols selection: listSymbols list first]
 ]
 
 { #category : #'initialize-release' }

@@ -10,19 +10,25 @@ Class {
 
 { #category : #callbacks }
 CMSpecEntityAddInterface >> addEntity [
+	" Private - Callback for adding a new entity "
 
 	self hasValidEntityName
-		ifTrue: [ self addValidEntity ]
-		ifFalse: [ ^ self informMessage: self translator tEnterClassName ].
-	self delete.
+		ifTrue: [ 
+			self addValidEntity.
+			self delete. ]
+		ifFalse: [ ^ self informMessage: self translator tValidNameRequired ].
 
 ]
 
 { #category : #callbacks }
 CMSpecEntityAddInterface >> addNewEntityItem: newClassName [
+	" Private - Update the receiver's list of entities with newClassName (if found) "
 
-	(Smalltalk hasClassNamed: newClassName asValidCormasClassName)
-		ifTrue: [ self owner addItem: newClassName asValidCormasClassName ].
+	| newEntity |
+	
+	newEntity := newClassName asValidCormasClassName: self projectManager cormasProjectName.
+	(Smalltalk hasClassNamed: newEntity)
+		ifTrue: [ self owner addItem: newEntity ].
 ]
 
 { #category : #callbacks }
@@ -34,7 +40,7 @@ CMSpecEntityAddInterface >> addValidEntity [
 	newClassName := self entityName textValuePending.
 	self projectAnnouncer announce: 
 		(CMEntityNewAnnouncement 
-			named: newClassName 
+			named: (newClassName asValidCormasClassName: self projectManager cormasProjectName) 
 			type: self entityType
 			superclass: self entitySuperclass).
 	self addNewEntityItem: newClassName.
@@ -74,7 +80,10 @@ CMSpecEntityAddInterface >> entityType [
 CMSpecEntityAddInterface >> hasValidEntityName [
 	" Answer <false> if the user provided entity name is not valid "
 
-	^ self entityName textValuePending notEmpty 
+	| providedName |
+	
+	providedName := self entityName textValuePending.
+	^ providedName notEmpty and: [ self projectManager isValidCormasEntityName: providedName  ]
 
 ]
 

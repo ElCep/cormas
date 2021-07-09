@@ -22,14 +22,43 @@ Class {
 
 { #category : #public }
 CMResourceLocator class >> assetsPath [
+"Return the assets path of Cormas
+Ex: {localDirectory}/iceberg/cormas/cormas/assets"
 	^ ([ self root ]
 		on: GBError
 		do: [ :ex | FileLocator workingDirectory ]) / 'assets'
 ]
 
+{ #category : #accessing }
+CMResourceLocator class >> cormasHomeProjects [
+
+	^ (FileLocator home / 'CORMAS') allChildrenMatching: CMApplicationProject applicationExtension.
+]
+
+{ #category : #accessing }
+CMResourceLocator class >> demosPath [
+	" Answer a <FileReference> with the receiver's path to the demos directory "
+
+	^ CMApplicationProject baseDirectory / 'demos'
+]
+
 { #category : #'class initialization' }
 CMResourceLocator class >> initialize [
 	SessionManager default registerSystemClassNamed: self name
+]
+
+{ #category : #accessing }
+CMResourceLocator class >> preferencesPath [
+	" Answer a <FileReference> with the receiver's path to the preferences directory "
+
+	^ CMApplicationProject baseDirectory / 'preferences'
+]
+
+{ #category : #accessing }
+CMResourceLocator class >> userProjectsPath [
+	" Answer a <FileReference> with the receiver's path to the user projects directory "
+
+	^ CMApplicationProject baseDirectory / 'projects'
 ]
 
 { #category : #public }
@@ -48,9 +77,19 @@ CMResourceLocator >> addOnsPath [
 
 ]
 
+{ #category : #'utilities - path' }
+CMResourceLocator >> animationsPath [
+	" Answer a <FileReference> corresponding to the path of stored Animations directory. "
+
+	^ (self assetsPath / 'Animations') ensureCreateDirectory.
+
+]
+
 { #category : #'utilities - csv' }
 CMResourceLocator >> assetNamed: aFilename [
-	" Answer a <FileReference> found at the assets location "
+	" Answer a <FileReference> found at the assets location.
+	aFilename = <String>
+	CMResourceLocator new assetNamed: 'models' >>> '/Users/.../iceberg/cormas/cormas/assets/models' "
 	
 	^ self assetsPath / aFilename
 
@@ -65,7 +104,8 @@ CMResourceLocator >> assetsFilesDirectoryName [
 
 { #category : #'utilities - path' }
 CMResourceLocator >> assetsPath [
-	" Answer a <FileReference> specifying a directory where CORRMAS assets are found "
+	" Answer a <FileReference> specifying a directory where CORMAS assets are found.
+	Ex: /Users/Bommel/Pharo/images/Pharo 8.0 - 64bit (stable)/pharo-local/iceberg/cormas/cormas/assets"
 
 	^ self class assetsPath asFileReference
 ]
@@ -117,14 +157,14 @@ CMResourceLocator >> mapsPath [
 ]
 
 { #category : #'utilities - path - models' }
-CMResourceLocator >> mapsPath: aModelClassName [
-	" Answer a FileReference corresponding to the path of the current path directory.
-	Argument: aModelClassName = <String>
+CMResourceLocator >> mapsPath: shortModelName [
+	" Answer a FileReference corresponding to the path of the maps directory of the current model.
+	Argument: shortModelName = <String>
 	Example: 
-		CMResourceLocator new mapsPath: #FireModel
+		CMResourceLocator new mapsPath: #FireModel >>> '/Users/.../cormas/assets/models/FireModel'
 	"
 	
-	^ ((self modelPath: aModelClassName) asFileReference / 'maps') ensureCreateDirectory.
+	^ ((self modelPath: shortModelName) asFileReference / 'maps') ensureCreateDirectory.
 
 ]
 
@@ -137,20 +177,21 @@ CMResourceLocator >> modelNames [
 ]
 
 { #category : #'utilities - path - models' }
-CMResourceLocator >> modelPath: aModelClassName [
+CMResourceLocator >> modelPath: shortModelName [
 	" Answer a FileReference corresponding to the path of the current model directory.
-	Argument: aModelClassName = <String>
+	Argument: shortModelName = <String>
 	Example: 
-	CMResourceLocator new modelPath: #FireModel
+	CMResourceLocator new modelPath: #FireModel >>> 'File @ /Users/Bommel/Pharo/images/Pharo 8.0 - 64bit (stable)/pharo-local/iceberg/cormas/cormas/assets/models/FireModel'
 	"
 	
-	^ (self modelsPath / aModelClassName asString) ensureCreateDirectory.
+	^ (self modelsPath / shortModelName asString) ensureCreateDirectory.
 
 ]
 
 { #category : #'utilities - path - models' }
 CMResourceLocator >> modelsPath [
-	" Answer a <FileReference> corresponding to the path of 'Models' directory "
+	" Answer a <FileReference> corresponding to the path of 'Models' directory 
+	Ex: File @ /Users/.../iceberg/cormas/cormas/assets/models"
 	
 	^ (self assetNamed: 'models') ensureCreateDirectory.
 

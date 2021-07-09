@@ -46,308 +46,6 @@ Class {
 	#category : #'Cormas-UI-Core'
 }
 
-{ #category : #resources }
-CMSpaceInterfaceConfig class >> apply [
-	
-	^ToolbarIconLibrary visualFor: #modificationApply
-]
-
-{ #category : #resources }
-CMSpaceInterfaceConfig class >> attributesMenu [
-	"Tools.MenuEditor new openOnClass: self andSelector: #manipEntityMenu"
-	
-	<resource: #menu>
-	^#(Menu #(#(MenuItem 
-		#rawLabel: 'remove' 
-		#value: #removeAttribute)) #(1) nil) decodeAsLiteralArray
-]
-
-{ #category : #resources }
-CMSpaceInterfaceConfig class >> createEntityMenu [
-	"Tools.MenuEditor new openOnClass: self andSelector: #createEntityMenu"
-	
-	<resource: #menu>
-	^#(Menu #(#(MenuItem 
-		#rawLabel: 'remove' 
-		#value: #removeCreateEntity)) #(1) nil) decodeAsLiteralArray
-]
-
-{ #category : #resources }
-CMSpaceInterfaceConfig class >> displayOptionsMenu [
-	"Tools.MenuEditor new openOnClass: self andSelector: #displayOptionsMenu"
-	
-	<resource: #menu>
-	^#(Menu #(#(MenuItem 
-		#rawLabel: 'Delimitors size' 
-		#submenu: #(Menu #(#(MenuItem 
-			#rawLabel: '0 pixel' 
-			#nameKey: #pixel0 
-			#value: #pixel0 
-			#indication: true 
-			#indicationSelector: #delimiterSize) #(MenuItem 
-			#rawLabel: '1 pixel' 
-			#nameKey: #pixel1 
-			#value: #pixel1 
-			#indication: true 
-			#indicationSelector: #delimiterSize) #(MenuItem 
-			#rawLabel: '2 pixels' 
-			#nameKey: #pixel2 
-			#value: #pixel2 
-			#indication: true 
-			#indicationSelector: #delimiterSize) #(MenuItem 
-			#rawLabel: '3 pixels' 
-			#nameKey: #pixel3 
-			#value: #pixel3 
-			#indication: true 
-			#indicationSelector: #delimiterSize)) #(4) nil)) #(MenuItem 
-		#rawLabel: 'Track agents' 
-		#nameKey: #trackAgents 
-		#indication: false) #(MenuItem 
-		#rawLabel: 'Set track length' 
-		#value: #setTrackLength) #(MenuItem 
-		#rawLabel: 'Default interface tool' 
-		#submenu: #(Menu #(#(MenuItem 
-			#rawLabel: 'Inspect' 
-			#nameKey: #toolInspect 
-			#value: #toolInspect 
-			#indication: true 
-			#indicationSelector: #defaultTool) #(MenuItem 
-			#rawLabel: 'Manipulate' 
-			#nameKey: #toolManipulate 
-			#value: #toolManipulate 
-			#indication: true 
-			#indicationSelector: #defaultTool) #(MenuItem 
-			#rawLabel: 'Create' 
-			#nameKey: #toolCreate 
-			#value: #toolCreate 
-			#indication: true 
-			#indicationSelector: #defaultTool) #(MenuItem 
-			#rawLabel: 'Zoom' 
-			#nameKey: #toolZoom 
-			#value: #toolZoom 
-			#indication: true 
-			#indicationSelector: #defaultTool)) #(4) nil) 
-		#helpText: 'Default tool used when clicking entities in the space interface') #(MenuItem 
-		#rawLabel: 'Enable touchpad mode' 
-		#nameKey: #toggleTouchpadMode 
-		#value: #toggleTouchpadMode 
-		#indication: false) #(MenuItem 
-		#rawLabel: 'Enable Undo/Redo' 
-		#nameKey: #toggleUndoRedo 
-		#value: #toggleUndoRedo 
-		#indication: true) #(MenuItem 
-		#rawLabel: 'Space interface menu bar' 
-		#submenu: #(Menu #(#(MenuItem 
-			#rawLabel: 'full menu' 
-			#nameKey: #siMenuFull 
-			#value: #siMenuFull_apply 
-			#indication: true 
-			#indicationSelector: #siMenuFormat) #(MenuItem 
-			#rawLabel: 'pov, info, track, Habitus' 
-			#nameKey: #siMenuLimitedWithHabitus 
-			#value: #siMenuLimitedWithHabitus_apply 
-			#indication: false 
-			#indicationSelector: #siMenuFormat) #(MenuItem 
-			#rawLabel: 'pov, info, track' 
-			#nameKey: #siMenuLimited 
-			#value: #siMenuLimited_apply 
-			#indication: false 
-			#indicationSelector: #siMenuFormat) #(MenuItem 
-			#rawLabel: 'pov, info, Habitus' 
-			#nameKey: #siMenuLimited2WithHabitus 
-			#value: #siMenuLimited2WithHabitus_apply) #(MenuItem 
-			#rawLabel: 'pov, info' 
-			#nameKey: #siMenuLimited2 
-			#value: #siMenuLimited2_apply) #(MenuItem 
-			#rawLabel: 'none' 
-			#nameKey: #siMenuNone 
-			#value: #siMenuNone_apply)) #(6) nil)) #(MenuItem 
-		#rawLabel: 'Show single default pov in menu' 
-		#nameKey: #toggleShowSingleDefaultPov 
-		#value: #toggleShowSingleDefaultPov 
-		#indication: true) #(MenuItem 
-		#rawLabel: 'Show single default info in menu' 
-		#nameKey: #toggleShowSingleDefaultInfo 
-		#value: #toggleShowSingleDefaultInfo 
-		#indication: true)) #(9) nil) decodeAsLiteralArray
-]
-
-{ #category : #resources }
-CMSpaceInterfaceConfig class >> infoMethodsMenu [
-	"Tools.MenuEditor new openOnClass: self andSelector: #infoMethodsMenu"
-	
-	<resource: #menu>
-	^#(Menu #(#(MenuItem 
-		#rawLabel: 'remove' 
-		#value: #removeInfoMethod) #(MenuItem 
-		#rawLabel: 'set as default' 
-		#value: #setSelectionAsDefaultInfo) #(MenuItem 
-		#rawLabel: 'no default info' 
-		#value: #cancelDefaultInfo)) #(2 1) nil) decodeAsLiteralArray
-]
-
-{ #category : #resources }
-CMSpaceInterfaceConfig class >> load [
-	
-	^ToolbarIconLibrary visualFor: #fileOpen
-]
-
-{ #category : #'save-load' }
-CMSpaceInterfaceConfig class >> loadSIconfig: aConfigSpec in: aSIConfig ofModel: aModel [
-	
-	| stream line aL data collec aClass configElement |
-	aSIConfig manipMethods: Dictionary new.
-	aSIConfig defaultPov: nil.
-	aSIConfig defaultInfo: nil.
-	stream := aConfigSpec readStream.
-	[stream atEnd]
-		whileFalse:
-			[line := Cormas splitLine: stream sep: $*.
-			configElement := (line first
-				copyFrom: 1
-				to: line first size - 1) asSymbol.
-			configElement = #configName
-				ifTrue: [aSIConfig configName value: line last].
-			(#(#observedEntitiesList #manipEntitiesList #createEntitiesList)
-				refersToLiteral: configElement)
-				ifTrue:
-					[aL := List new.
-					(Cormas
-						splitLine: line last readStream
-						sep: $,)
-						do:
-							[:i | 
-							aClass := (Cormas stringAsObjectType: i) class.
-							aClass ifNotNil: [aL add: aClass]].
-					(aSIConfig perform: configElement) setList: aL selecting: ''].
-			(#(#manipMethods #povMethods #attributes #infoMethods #probeMethods)
-				refersToLiteral: configElement)
-				ifTrue:
-					[data := (Cormas
-						splitLine: line last readStream
-						sep: $,) asOrderedCollection.
-					aClass := (Cormas stringAsObjectType: data removeFirst) class.
-					aClass
-						ifNotNil:
-							[(aSIConfig perform: configElement)
-								at: aClass
-								put: (data collect: [:m | m asSymbol])]].
-			(#(#canBeMoved #manipWholePop #canChangeValues) refersToLiteral:
-					configElement)
-				ifTrue:
-					[data := (Cormas
-						splitLine: line last readStream
-						sep: $,) asOrderedCollection.
-					aClass := (Cormas stringAsObjectType: data removeFirst) class.
-					aClass
-						ifNotNil:
-							[(aSIConfig perform: configElement)
-								at: aClass
-								put: (Cormas stringAsObjectType: data first)]].
-			(#(#defaultPov #defaultInfo) refersToLiteral: configElement)
-				ifTrue:
-					[data := (Cormas
-						splitLine: line last readStream
-						sep: $,) asOrderedCollection.
-					aClass := (Cormas stringAsObjectType: data removeFirst) class.
-					aClass
-						ifNotNil:
-							[(aSIConfig perform: configElement)
-								at: aClass
-								put: data first asSymbol]].
-			configElement = #delimiterSize
-				ifTrue:
-					[data := (Cormas
-						splitLine: line last readStream
-						sep: $,) asOrderedCollection.
-					data removeFirst.
-					aSIConfig perform: data first asSymbol].
-			configElement = #defaultTool
-				ifTrue:
-					[data := (Cormas
-						splitLine: line last readStream
-						sep: $,) asOrderedCollection.
-					aSIConfig perform: data first asSymbol].
-			configElement = #siMenuFormat
-				ifTrue:
-					[data := (Cormas
-						splitLine: line last readStream
-						sep: $,) asOrderedCollection.
-					aSIConfig perform: data first asSymbol].
-			configElement = #isUndoRedoEnabled
-				ifTrue:
-					[data := (Cormas
-						splitLine: line last readStream
-						sep: $,) asOrderedCollection first.
-					aSIConfig isUndoRedoEnabled: (Cormas stringAsObjectType: data)].
-			configElement = #isManipulateForTabletEnabled
-				ifTrue:
-					[data := (Cormas
-						splitLine: line last readStream
-						sep: $,) asOrderedCollection first.
-					aSIConfig
-						isManipulateForTabletEnabled: (Cormas stringAsObjectType: data)].
-			configElement = #isSingleDefaultPovShown
-				ifTrue:
-					[data := (Cormas
-						splitLine: line last readStream
-						sep: $,) asOrderedCollection first.
-					aSIConfig isSingleDefaultPovShown: (Cormas stringAsObjectType: data)].
-			configElement = #isSingleDefaultInfoShown
-				ifTrue:
-					[data := (Cormas
-						splitLine: line last readStream
-						sep: $,) asOrderedCollection first.
-					aSIConfig isSingleDefaultInfoShown: (Cormas stringAsObjectType: data)].
-			configElement = #trackLengthValue
-				ifTrue:
-					[data := (Cormas
-						splitLine: line last readStream
-						sep: $,) asOrderedCollection.
-					data removeFirst.
-					aSIConfig
-						applyTrackLengthValue: (Cormas stringAsObjectType: data first)].
-			configElement = #trackedAgents
-				ifTrue:
-					[collec := Set new.
-					line size = 1
-						ifFalse:
-							[(Cormas
-								splitLine: line last readStream
-								sep: $,)
-								do: [:i | collec add: (Cormas stringAsObjectType: i) asSymbol]].
-					aSIConfig trackedAgents: collec]].
-	stream close
-]
-
-{ #category : #resources }
-CMSpaceInterfaceConfig class >> manipEntityMenu [
-	"Tools.MenuEditor new openOnClass: self andSelector: #manipEntityMenu"
-	
-	<resource: #menu>
-	^#(Menu #(#(MenuItem 
-		#rawLabel: 'remove' 
-		#value: #removeManipEntity)) #(1) nil) decodeAsLiteralArray
-]
-
-{ #category : #resources }
-CMSpaceInterfaceConfig class >> manipMethodsMenu [
-	"Tools.MenuEditor new openOnClass: self andSelector: #manipEntityMenu"
-	
-	<resource: #menu>
-	^#(Menu #(#(MenuItem 
-		#rawLabel: 'remove' 
-		#value: #removeManipMethod)) #(1) nil) decodeAsLiteralArray
-]
-
-{ #category : #resources }
-CMSpaceInterfaceConfig class >> minusIcon [
-	
-	^OpaqueImage
-		figure: self removeEntityIconImage
-		shape: self removeEntityIconMask
-]
-
 { #category : #'instance creation' }
 CMSpaceInterfaceConfig class >> newFor: aSI [
 	
@@ -380,62 +78,6 @@ CMSpaceInterfaceConfig class >> newFor: aSI withConfig: aConfigName [
 CMSpaceInterfaceConfig class >> plusIcon [
 	
 	^SpaceInterface createEntityIcon
-]
-
-{ #category : #resources }
-CMSpaceInterfaceConfig class >> question [
-	
-	^ToolbarIconLibrary visualFor: #unknownWidget
-]
-
-{ #category : #resources }
-CMSpaceInterfaceConfig class >> removeEntityIconImage [
-	"Tools.UIMaskEditor new openOnClass: self andSelector: #removeEntityIconMask"
-	
-	<resource: #image>
-	^CachedImage
-		on:
-			(Image
-				extent: 24 @ 14
-				depth: 2
-				bitsPerPixel: 2
-				palette:
-					(MappedPalette
-						withColors:
-							(#(#(ColorValue 
-								#scaledRed:scaledGreen:scaledBlue: #(0 0 0)) #(ColorValue 
-								#scaledRed:scaledGreen:scaledBlue: #(8191 8191 8191)) #(ColorValue 
-								#scaledRed:scaledGreen:scaledBlue: #(1541 1541 1541)) #(ColorValue 
-								#scaledRed:scaledGreen:scaledBlue: #(513 513 513)))
-								collect:
-									[:each | 
-									(each at: 1) value
-										perform: (each at: 2)
-										withArguments: (each at: 3)]))
-				usingBits:
-					#[85 85 85 85 85 85 0 0 85 85 85 85 85 85 0 0 85 85 85 85 85 85 0 0 85 85 85 85 85 85 0 0 85 85 85 85 85 85 0 0 85 96 0 0 37 85 0 0 85 69 85 85 69 85 0 0 85 69 85 85 69 85 0 0 85 69 85 85 69 85 0 0 85 112 0 0 53 85 0 0 85 85 85 85 85 85 0 0 85 85 85 85 85 85 0 0 85 85 85 85 85 85 0 0 85 85 85 85 85 85 0 0])
-]
-
-{ #category : #resources }
-CMSpaceInterfaceConfig class >> removeEntityIconMask [
-	"Tools.UIMaskEditor new openOnClass: self andSelector: #removeEntityIconMask"
-	
-	<resource: #image>
-	^CachedImage
-		on:
-			(Image
-				extent: 24 @ 14
-				depth: 1
-				bitsPerPixel: 1
-				palette: CoveragePalette monoMaskPalette
-				usingBits:
-					#[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 7 255 192 0 7 255 192 0 7 255 192 0 7 255 192 0 7 255 192 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0])
-]
-
-{ #category : #resources }
-CMSpaceInterfaceConfig class >> save [
-	
-	^ToolbarIconLibrary visualFor: #fileSave
 ]
 
 { #category : #'save-load' }
@@ -883,26 +525,6 @@ CMSpaceInterfaceConfig >> applyDefaultPovs [
 						ifTrue: [ self spaceInterface changePov: defPov ofEntity: aClass ] ] ]
 ]
 
-{ #category : #'menu-display options' }
-CMSpaceInterfaceConfig >> applyTrackLengthValue: value [
-	
-	| aClass |
-	value = 'nil' ifTrue: [^nil].
-	TrackFigure maxSize: value.
-	self spaceInterface trackedFigureTypes
-		do:
-			[:symbol | 
-			aClass := symbol class.
-			(self spaceInterface drawing entityFiguresAt: aClass)
-				do:
-					[:fig | 
-					(fig dependents select: [:tf | tf isKindOf: TrackFigure])
-						do:
-							[:track | 
-							track testAndRemoveOrigine.
-							track invalidate]]]
-]
-
 { #category : #accessing }
 CMSpaceInterfaceConfig >> attributes [
 	
@@ -1281,81 +903,6 @@ CMSpaceInterfaceConfig >> delimiterSize [
 		ifFalse: [delimiterSize]
 ]
 
-{ #category : #'refresh display methods' }
-CMSpaceInterfaceConfig >> displayMethodsAndOptionsForManipEntity [
-	
-	| anEntity |
-	anEntity := self manipEntitiesList selection.
-	anEntity
-		ifNil:
-			[self moveEntityCheckBox value: false.
-			self manipWholePopCheckBox value: false.
-			self canChangeValuesCheckBox value: false.
-			^self manipMethodsList
-				setList: List new
-				selecting: Array new].
-	self manipMethodsList
-		setList: (self manipMethodsFor: anEntity)
-		selecting: Array new.
-	anEntity isSituatedClass
-		ifTrue:
-			[(self builder namedComponents at: #moveEntityCheckBox)
-				enable;
-				isVisible: true.
-			self moveEntityCheckBox value: (self canBeMovedFor: anEntity)]
-		ifFalse:
-			[(self builder namedComponents at: #moveEntityCheckBox)
-				disable;
-				isVisible: false].
-	self manipWholePopCheckBox value: (self manipWholePopFor: anEntity).
-	self canChangeValuesCheckBox value: (self canChangeValuesFor: anEntity)
-]
-
-{ #category : #'refresh display methods' }
-CMSpaceInterfaceConfig >> displayMethodsForObservedEntity [
-	
-	| anEntity aPovList aInfoList |
-	anEntity := self observedEntitiesList selection.
-	anEntity
-		ifNil:
-			[self povMethodsList
-				setList: List new
-				selecting: Array new.
-			self attributesList
-				setList: List new
-				selecting: Array new.
-			self infoMethodsList
-				setList: List new
-				selecting: Array new.
-			^self probeMethodsList
-				setList: List new
-				selecting: Array new].	"Prepare list for pov methods which will  include a specific sign for the default pov"
-	aPovList := (self povMethodsFor: anEntity) copy.
-	(self defaultPovFor: anEntity)
-		ifNotNil:
-			[aPovList remove: (self defaultPovFor: anEntity).
-			aPovList add: (self defaultPov at: anEntity) , ' ->D'.
-			aPovList sort: [:x :y | x < y]].	"Prepare list for info  methods which will  include a specific sign for the default info"
-	aInfoList := (self infoMethodsFor: anEntity) copy.
-	(self defaultInfoFor: anEntity)
-		ifNotNil:
-			[aInfoList remove: (self defaultInfoFor: anEntity).
-			aInfoList add: (self defaultInfo at: anEntity) , ' ->D'.
-			aInfoList sort: [:x :y | x < y]].
-	self povMethodsList
-		setList: aPovList
-		selecting: Array new.
-	self attributesList
-		setList: (self attributesFor: anEntity)
-		selecting: Array new.
-	self infoMethodsList
-		setList: aInfoList
-		selecting: Array new.
-	self probeMethodsList
-		setList: (self probeMethodsFor: anEntity)
-		selecting: Array new
-]
-
 { #category : #aspects }
 CMSpaceInterfaceConfig >> displayOptionsValidation [
 	
@@ -1406,17 +953,6 @@ CMSpaceInterfaceConfig >> explainHabitus [
 		title: self translator tHabitusTitle;
 		open
 
-]
-
-{ #category : #'overwrite spaceInterface' }
-CMSpaceInterfaceConfig >> forceSItoApplyConfigTrackAgents [
-	
-	(entitiesList
-		sorted: [:a :b | a name asString first > b name asString first])
-		do:
-			[:agentClass | 
-			(agentClass isSituatedClass and: [agentClass inheritsFrom: Agent])
-				ifTrue: [self forceSItrackAgents: agentClass]]
 ]
 
 { #category : #'overwrite spaceInterface' }
@@ -1514,140 +1050,10 @@ CMSpaceInterfaceConfig >> infoMethodsList_WithoutDefaultSign [
 	^ self multiSelectionList with: aList
 ]
 
-{ #category : #'menu-display options' }
-CMSpaceInterfaceConfig >> initDisplayOptionsMenu [
-	
-	| menuDyn agentClasses menuAgents |
-	agentClasses := List new.
-	agentClasses
-		addAll:
-			(entitiesList select: [:e | e isSituatedClass and: [e inheritsFrom: Agent]]).
-	menuDyn := (builder menuAt: #displayOptionsMenu) value atNameKey:
-			#trackAgents.
-	menuAgents := Menu new.
-	1
-		to: agentClasses size
-		do:
-			[:i | 
-			| aClass |
-			aClass := agentClasses at: i.
-			menuAgents
-				addItemLabel: aClass name
-				value: [self trackAgents: aClass]].
-	menuDyn submenu: menuAgents
-]
-
 { #category : #testing }
 CMSpaceInterfaceConfig >> isItDefault: aSymbolOrString [
 	
 	^'* ->D' match: aSymbolOrString
-]
-
-{ #category : #accessing }
-CMSpaceInterfaceConfig >> isManipulateForTabletEnabled [
-	
-	^isManipulateForTabletEnabled
-		ifNil:
-			[isManipulateForTabletEnabled := ((builder menuAt: #displayOptionsMenu)
-				value atNameKey: #toggleTouchpadMode) isOn]
-]
-
-{ #category : #accessing }
-CMSpaceInterfaceConfig >> isManipulateForTabletEnabled: aBoolean [
-	
-	| menuDyn |
-	isManipulateForTabletEnabled := aBoolean.
-	builder
-		ifNotNil:
-			[:b | 
-			menuDyn := (b menuAt: #displayOptionsMenu) value atNameKey:
-					#toggleTouchpadMode.
-			aBoolean
-				ifTrue: [menuDyn beOn]
-				ifFalse: [menuDyn beOff]].
-	self spaceInterface isManipulateForTabletEnabled = aBoolean
-		ifFalse: [self spaceInterface isManipulateForTabletEnabled: aBoolean]
-]
-
-{ #category : #accessing }
-CMSpaceInterfaceConfig >> isSingleDefaultInfoShown [
-	
-	^isSingleDefaultInfoShown
-		ifNil:
-			[isSingleDefaultInfoShown := builder
-				ifNil: [true]
-				ifNotNil:
-					[:b | 
-					((b menuAt: #displayOptionsMenu) value atNameKey:
-							#toggleShowSingleDefaultInfo) isOn]]
-]
-
-{ #category : #accessing }
-CMSpaceInterfaceConfig >> isSingleDefaultInfoShown: aBoolean [
-	
-	| menuDyn |
-	isSingleDefaultInfoShown := aBoolean.
-	builder
-		ifNotNil:
-			[:b | 
-			menuDyn := (b menuAt: #displayOptionsMenu) value atNameKey:
-					#toggleShowSingleDefaultInfo.
-			aBoolean
-				ifTrue: [menuDyn beOn]
-				ifFalse: [menuDyn beOff]]
-]
-
-{ #category : #accessing }
-CMSpaceInterfaceConfig >> isSingleDefaultPovShown [
-	
-	^isSingleDefaultPovShown
-		ifNil:
-			[isSingleDefaultPovShown := builder
-				ifNil: [true]
-				ifNotNil:
-					[:b | 
-					((b menuAt: #displayOptionsMenu) value atNameKey:
-							#toggleShowSingleDefaultPov) isOn]]
-]
-
-{ #category : #accessing }
-CMSpaceInterfaceConfig >> isSingleDefaultPovShown: aBoolean [
-	
-	| menuDyn |
-	isSingleDefaultPovShown := aBoolean.
-	builder
-		ifNotNil:
-			[:b | 
-			menuDyn := (b menuAt: #displayOptionsMenu) value atNameKey:
-					#toggleShowSingleDefaultPov.
-			aBoolean
-				ifTrue: [menuDyn beOn]
-				ifFalse: [menuDyn beOff]]
-]
-
-{ #category : #accessing }
-CMSpaceInterfaceConfig >> isUndoRedoEnabled [
-	
-	^isUndoRedoEnabled
-		ifNil:
-			[isUndoRedoEnabled := ((builder menuAt: #displayOptionsMenu) value
-				atNameKey: #toggleUndoRedo) isOn]
-]
-
-{ #category : #accessing }
-CMSpaceInterfaceConfig >> isUndoRedoEnabled: aBoolean [
-	
-	| menuDyn |
-	isUndoRedoEnabled := aBoolean.
-	builder
-		ifNotNil:
-			[:b | 
-			menuDyn := (b menuAt: #displayOptionsMenu) value atNameKey: #toggleUndoRedo.
-			aBoolean
-				ifTrue: [menuDyn beOn]
-				ifFalse: [menuDyn beOff]].
-	self spaceInterface enableUndo = aBoolean
-		ifFalse: [self spaceInterface enableUndoOption]
 ]
 
 { #category : #actions }
@@ -1807,21 +1213,6 @@ CMSpaceInterfaceConfig >> observedEntitiesList [
 	^observedEntitiesList isNil
 		ifTrue: [observedEntitiesList := SelectionInList new]
 		ifFalse: [observedEntitiesList]
-]
-
-{ #category : #'interface opening' }
-CMSpaceInterfaceConfig >> open [
-	
-	self dependents isEmpty
-		ifTrue:
-			[builder := self allButOpenInterface: #windowSpec.
-			builder window
-				label:
-					builder window label , self spaceInterface basicTitle printString.
-			self initDisplayOptionsMenu.
-			self setCheckMarksForDisplayOptionsMenu.
-			^builder window open]
-		ifFalse: [self mainWindow raise]
 ]
 
 { #category : #'menu-display options' }
@@ -2142,55 +1533,6 @@ CMSpaceInterfaceConfig >> setChangeValues [
 		put: self canChangeValuesCheckBox value
 ]
 
-{ #category : #'menu-display options' }
-CMSpaceInterfaceConfig >> setCheckMarksForDisplayOptionsMenu [
-	
-	| menu menuDyn |
-	entitiesList
-		do:
-			[:agentClass | 
-			(agentClass isSituatedClass and: [agentClass inheritsFrom: Agent])
-				ifTrue:
-					[menu := ((builder menuAt: #displayOptionsMenu) value atNameKey:
-							#trackAgents) submenu menuItemLabeled: agentClass name asString.
-					(self trackedAgents includes: agentClass name)
-						ifFalse: [menu beOff]
-						ifTrue: [menu beOn]]].
-	isManipulateForTabletEnabled
-		ifNotNil:
-			[menuDyn := (builder menuAt: #displayOptionsMenu) value atNameKey:
-					#toggleTouchpadMode.
-			isManipulateForTabletEnabled
-				ifTrue: [menuDyn beOn]
-				ifFalse: [menuDyn beOff]]
-		ifNil:
-			[self
-				isManipulateForTabletEnabled:
-					self spaceInterface isManipulateForTabletEnabled].
-	isUndoRedoEnabled
-		ifNotNil:
-			[menuDyn := (builder menuAt: #displayOptionsMenu) value atNameKey:
-					#toggleUndoRedo.
-			isUndoRedoEnabled
-				ifTrue: [menuDyn beOn]
-				ifFalse: [menuDyn beOff]]
-		ifNil: [self isUndoRedoEnabled: self spaceInterface enableUndo].
-	isSingleDefaultPovShown
-		ifNotNil:
-			[menuDyn := (builder menuAt: #displayOptionsMenu) value atNameKey:
-					#toggleShowSingleDefaultPov.
-			isSingleDefaultPovShown
-				ifTrue: [menuDyn beOn]
-				ifFalse: [menuDyn beOff]].
-	isSingleDefaultInfoShown
-		ifNotNil:
-			[menuDyn := (builder menuAt: #displayOptionsMenu) value atNameKey:
-					#toggleShowSingleDefaultInfo.
-			isSingleDefaultInfoShown
-				ifTrue: [menuDyn beOn]
-				ifFalse: [menuDyn beOff]]
-]
-
 { #category : #actions }
 CMSpaceInterfaceConfig >> setManipWholePop [
 	
@@ -2286,13 +1628,6 @@ CMSpaceInterfaceConfig >> siMenuFull [
 ]
 
 { #category : #'menu-display options' }
-CMSpaceInterfaceConfig >> siMenuFull_apply [
-	
-	self siMenuFull.
-	self reopenSI openSIconfig
-]
-
-{ #category : #'menu-display options' }
 CMSpaceInterfaceConfig >> siMenuLimited [
 	
 	self siMenuFormat value: #siMenuLimited
@@ -2311,50 +1646,15 @@ CMSpaceInterfaceConfig >> siMenuLimited2WithHabitus [
 ]
 
 { #category : #'menu-display options' }
-CMSpaceInterfaceConfig >> siMenuLimited2WithHabitus_apply [
-	
-	self siMenuLimited2WithHabitus.
-	self reopenSI openSIconfig
-]
-
-{ #category : #'menu-display options' }
-CMSpaceInterfaceConfig >> siMenuLimited2_apply [
-	
-	self siMenuLimited2.
-	self reopenSI openSIconfig
-]
-
-{ #category : #'menu-display options' }
 CMSpaceInterfaceConfig >> siMenuLimitedWithHabitus [
 	
 	self siMenuFormat value: #siMenuLimitedWithHabitus
 ]
 
 { #category : #'menu-display options' }
-CMSpaceInterfaceConfig >> siMenuLimitedWithHabitus_apply [
-	
-	self siMenuLimitedWithHabitus.
-	self reopenSI openSIconfig
-]
-
-{ #category : #'menu-display options' }
-CMSpaceInterfaceConfig >> siMenuLimited_apply [
-	
-	self siMenuLimited.
-	self reopenSI openSIconfig
-]
-
-{ #category : #'menu-display options' }
 CMSpaceInterfaceConfig >> siMenuNone [
 	
 	self siMenuFormat value: #siMenuNone
-]
-
-{ #category : #'menu-display options' }
-CMSpaceInterfaceConfig >> siMenuNone_apply [
-	
-	self siMenuNone.
-	self reopenSI openSIconfig
 ]
 
 { #category : #accessing }

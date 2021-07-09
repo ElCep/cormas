@@ -14,93 +14,19 @@ Class {
 BaselineOfCormas >> baseline: spec [
 	<baseline>
 	spec
-		for: #common
-			do: [ spec blessing: #baseline.
+		for: #common do: [ 
+			spec blessing: #baseline.
 			spec postLoadDoIt: #postLoad.
-			spec
-				baseline: 'PetitParser'
-					with: [ spec
-						repository: 'github://moosetechnology/PetitParser/src';
-						loads: #('YAML') ];
-				baseline: 'FileDialog'
-					with: [ spec repository: 'github://peteruhnak/file-dialog/repository' ];
-				baseline: 'ProjectFramework'
-					with:
-						[ spec repository: 'github://hernanmd/ProjectFramework/repository' ];
-				baseline: 'CodeGenerator'
-					with: [ spec repository: 'github://hernanmd/CodeGenerator/repository' ];
-				baseline: 'Roassal2'
-					with: [ spec repository: 'github://ObjectProfile/Roassal2/src' ];
-				baseline: 'NeoCSV'
-					with: [ spec repository: 'github://svenvc/NeoCSV/repository' ];
-				baseline: 'PolyMath'
-					with: [ spec repository: 'github://PolyMathOrg/PolyMath/src' ];
-				baseline: 'GitBridge'
-					with: [ spec repository: 'github://jecisc/GitBridge/src' ];
-				baseline: 'ESRIASCIIRaster'
-					with: [ spec repository: 'github://pharo-GIS/ESRI-ASCII-Raster/' ].
-			spec
-				package: 'Cormas-Core' with: [ spec requires: #('PolyMath' 'PetitParser' 'NeoCSV' 'GitBridge' 'ESRIASCIIRaster') ];
-				package: 'Cormas-Model-Conway';
-				package: 'Cormas-Model-DemoAggregates';
-				package: 'Cormas-Model-Diffuse';
-				package: 'Cormas-Model-ECEC';
-				package: 'Cormas-Model-FireAutomata';
-				package: 'Cormas-Model-PlotsRental';
-				package: 'Cormas-Model-ReHab';
-				package: 'Cormas-Model-Stupid';
-				package: 'Cormas-Tests' with: [ spec requires: #('Cormas-Core') ];
-				package: 'Cormas-OpenMole'
-					with: [ spec requires: #('Cormas-Core') ];
-				package: 'Cormas-UI'
-					with: [ spec
-						requires: #('FileDialog' 'ProjectFramework' 'CodeGenerator' 'Roassal2') ];
-				package: 'Cormas-UI-Tests'
-					with: [ spec requires: #('Cormas-Tests' 'Cormas-UI') ];
-				package: 'Cormas-VW-Ported'.
-			spec
-				group: 'Core' with: #('Cormas-Core');
-				group: 'Tests' with: #('Core' 'Cormas-Tests' 'Cormas-UI-Tests');
-				group: 'UI' with: #(#'Cormas-UI' 'Core') ];
-		group: 'Models'
-			with:
-			#('Cormas-Model-Conway' 'Cormas-Model-ReHab' 'Cormas-Core' 'Cormas-Model-ECEC' 'Cormas-Model-FireAutomata' 'Cormas-Model-PlotsRental' 'Cormas-Model-Diffuse' 'Cormas-Model-DemoAggregates' 'Cormas-Model-Stupid');
-		group: 'OpenMole' with: #('Cormas-OpenMole' 'Core');
-		group: 'All'
-			with: #('Cormas-VW-Ported' 'UI' 'Tests' 'Core' 'Models' 'OpenMole').
-	spec
-		for: #'pharo7.x'
-		do: [ spec preLoadDoIt: #preLoadForPharo7.
-			spec
-				project: 'Tabular'
-					with: [ spec
-						className: #ConfigurationOfTabular;
-						versionString: #development;
-						repository: 'http://ss3.gemtalksystems.com/ss/Tabular' ];
-				project: 'NeoJSON'
-					with: [ spec
-						className: 'ConfigurationOfNeoJSON';
-						version: #stable;
-						repository: 'http://smalltalkhub.com/mc/SvenVanCaekenberghe/Neo/main' ] ].
-	spec
-		for: #'pharo8.x'
-		do: [ spec preLoadDoIt: #preLoadForPharo8.
-			spec
-				baseline: 'Tabular'
-					with: [ spec repository: 'github://VincentBlondeau/Tabular' ];
-				baseline: 'NeoJSON'
-					with: [ spec repository: 'github://svenvc/NeoJSON/repository' ] ].
-	"baseline: 'Roassal3'
-					with: [ spec repository: 'github://ObjectProfile/Roassal3' ];"
-	spec
-		for: #'pharo9.x'
-		do: [ spec preLoadDoIt: #preLoadForPharo9.
-			spec
-				baseline: 'Tabular'
-					with: [ spec repository: 'github://VincentBlondeau/Tabular' ];
-				baseline: 'NeoJSON'
-					with: [ "baseline: 'Roassal3'
-					with: [ spec repository: 'github://ObjectProfile/Roassal3' ];" spec repository: 'github://svenvc/NeoJSON' ] ]
+			self 
+				specForBaselines: spec;
+				specForPackages: spec;
+				specForGroups: spec ].
+
+	self 
+		specForPharo7: spec;
+		specForPharo8: spec;
+		specForPharo9: spec.
+
 ]
 
 { #category : #doits }
@@ -110,35 +36,6 @@ BaselineOfCormas >> closePharoWelcomeWindow [
 	World submorphs
 		select: [ :sm | self isWelcomeWindow: sm ]
 		thenDo: [ :window | window delete ]
-]
-
-{ #category : #doits }
-BaselineOfCormas >> cormasExpressions [
-	" Answer a <String> with Smalltalk expressions "
-	
-	^ 'CMProjectModel allInstances isEmpty.
-CMProjectManager allInstances.
-CMSpecProjectWindow allInstances.
-
-CMProjectModel allInstances first.
-CMProjectManager allInstances first.
-CMSpecProjectWindow allInstances first.
-
-CMProjectModel allInstances first pointersTo.
-CMProjectManager allInstances first pointersTo.
-CMSpecProjectWindow allInstances first pointersTo.
-
-CMSpecProjectWindow allInstances first projectAnnouncer subscriptions reset.
-CMProjectManager allInstances first announcer subscriptions reset.
-
-CMSpecProjectWindow allInstancesDo: [ : e | e becomeForward: nil ].
-CMProjectManager allInstancesDo: [ : e | e becomeForward: nil ].
-CMProjectModel allInstancesDo: [ : e | e becomeForward: nil ].
-3 timesRepeat: [ Smalltalk garbageCollect ].
-{ CMProjectModel allInstances.
-CMProjectManager allInstances.
-CMSpecProjectWindow allInstances } allSatisfy: #isEmpty.'
-
 ]
 
 { #category : #doits }
@@ -173,8 +70,8 @@ BaselineOfCormas >> loadBgImage [
 { #category : #doits }
 BaselineOfCormas >> openPlaygroundWindow [
 
-	(Workspace openLabel: 'CORMAS - Useful expressions')
-		contents: self cormasExpressions.
+	(Workspace openLabel: 'CORMAS - Welcome')
+		contents: ''.
 ]
 
 { #category : #doits }
@@ -196,7 +93,8 @@ BaselineOfCormas >> postLoad [
 	(Smalltalk at: #FDMorphicUIManager) new beDefault.
 	"TaskbarMorph showTaskbar: false."
 	self unloadPackages.
-	self openPlaygroundWindow.
+	"self openPlaygroundWindow."
+
 ]
 
 { #category : #doits }
@@ -221,8 +119,133 @@ BaselineOfCormas >> preLoadForPharo8 [
 BaselineOfCormas >> preLoadForPharo9 [
 	" Private - Execute post install actions "
 
-	Smalltalk tools debugger filterCommonMessageSends: true.
-	PharoLightTheme beCurrent
+	"Smalltalk tools debugger filterCommonMessageSends: true."
+	PharoLightTheme beCurrent.
+	RSUMLCalypsoSettings useCalypsoUML: false.
+]
+
+{ #category : #specs }
+BaselineOfCormas >> specForBaselines: spec [
+
+	spec
+		baseline: 'PetitParser'
+		with: [ 
+			spec
+				repository: 'github://moosetechnology/PetitParser/src';
+				loads: #('YAML') ];
+
+"				baseline: 'SMark' 
+				with: [ spec repository: 'github://guillep/SMark/repository' ];"
+				baseline: 'SMark'
+				with: [ spec repository: 'github://smarr/SMark:v1.0.4' ];
+					
+				baseline: 'FileDialog'
+				with: [ spec repository: 'github://peteruhnak/file-dialog:v1.0.0/repository' ];
+
+				baseline: 'ProjectFramework'
+				with: [ spec repository: 'github://hernanmd/ProjectFramework/repository' ];
+
+				baseline: 'CodeGenerator'
+				with: [ spec repository: 'github://hernanmd/CodeGenerator/repository' ];
+
+				baseline: 'Roassal2'
+				with: [ spec repository: 'github://ObjectProfile/Roassal2/src' ];
+
+				baseline: 'PolyMath'
+				with: [ 
+					spec 
+						repository: 'github://PolyMathOrg/PolyMath/src';
+						loads: #('Core') ];
+
+				baseline: 'GitBridge'
+				with: [ spec repository: 'github://jecisc/GitBridge/src' ];
+
+				baseline: 'ESRIASCIIRaster'
+				with: [ spec repository: 'github://pharo-GIS/ESRI-ASCII-Raster/' ].
+
+]
+
+{ #category : #specs }
+BaselineOfCormas >> specForGroups: spec [
+
+	spec
+		group: 'Core' 		with: #('Cormas-Core');
+		group: 'Tests' 		with: #('Core' 'Cormas-Tests' 'Cormas-UI-Tests');
+		group: 'UI' 			with: #(#'Cormas-UI' 'Core');
+		group: 'Models' 	with: 	#('Cormas-Model-Conway' 'Cormas-Model-ReHab' 'Cormas-Core' 'Cormas-Model-ECEC' 'Cormas-Model-FireAutomata' 'Cormas-Model-PlotsRental' 'Cormas-Model-Diffuse' 'Cormas-Model-DemoAggregates' 'Cormas-Model-Stupid');
+		group: 'OpenMole'	with: #('Cormas-OpenMole' 'Core');
+		group: 'All'			with: #('UI' 'Tests' 'Core' 'Models' 'OpenMole');
+		group: 'default' 	with: #('All')	
+]
+
+{ #category : #specs }
+BaselineOfCormas >> specForPackages: spec [
+
+	spec
+		package: 'Cormas-Core' with: [ spec requires: #('PolyMath' 'PetitParser' 'GitBridge' 'ESRIASCIIRaster') ];
+
+		package: 'Cormas-Model-Conway';
+		package: 'Cormas-Model-DemoAggregates';
+		package: 'Cormas-Model-Diffuse';
+		package: 'Cormas-Model-ECEC';
+		package: 'Cormas-Model-FireAutomata';
+		package: 'Cormas-Model-PlotsRental';
+		package: 'Cormas-Model-ReHab';
+		package: 'Cormas-Model-Stupid';
+		package: 'Cormas-Tests' with: [ spec requires: #('Cormas-Core') ];
+		package: 'Cormas-OpenMole' with: [ spec requires: #('Cormas-Core') ];
+
+		package: 'Cormas-UI' with: [ spec requires: #('FileDialog' 'ProjectFramework' 'CodeGenerator' 'Roassal2' 'SMark') ];
+		package: 'Cormas-UI-Tests' with: [ spec requires: #('Cormas-Tests' 'Cormas-UI') ]
+]
+
+{ #category : #specs }
+BaselineOfCormas >> specForPharo7: spec [
+
+	spec
+		for: #'pharo7.x'
+		do: [ 
+			spec preLoadDoIt: #preLoadForPharo7.
+			spec
+				project: 'Tabular'
+					with: [ spec
+						className: #ConfigurationOfTabular;
+						versionString: #development;
+						repository: 'http://ss3.gemtalksystems.com/ss/Tabular' ];
+				project: 'NeoJSON'
+					with: [ spec
+						className: 'ConfigurationOfNeoJSON';
+						version: #stable;
+						repository: 'http://smalltalkhub.com/mc/SvenVanCaekenberghe/Neo/main' ] ].
+]
+
+{ #category : #specs }
+BaselineOfCormas >> specForPharo8: spec [
+
+	spec
+		for: #'pharo8.x'
+		do: [ 
+			spec preLoadDoIt: #preLoadForPharo8.
+			spec
+				baseline: 'Tabular' 	with: [ spec repository: 'github://VincentBlondeau/Tabular' ];
+				baseline: 'NeoJSON' 	with: [ spec repository: 'github://svenvc/NeoJSON/repository' ] ].
+
+	"baseline: 'Roassal3'
+					with: [ spec repository: 'github://ObjectProfile/Roassal3' ];"
+]
+
+{ #category : #specs }
+BaselineOfCormas >> specForPharo9: spec [
+
+	spec
+		for: #'pharo9.x'
+		do: [ spec preLoadDoIt: #preLoadForPharo9.
+			spec
+				baseline: 'Tabular' 		with: [ spec repository: 'github://VincentBlondeau/Tabular' ];
+				baseline: 'NeoJSON' 		with: [ spec repository: 'github://svenvc/NeoJSON' ];
+				baseline: 'ClassEditor'	with: [ spec repository: 'github://hernanmd/class-editor/repository'; loads: 'complete' ]  ]
+				"baseline: 'Roassal3' with: [ spec repository: 'github://ObjectProfile/Roassal3' ];"  
+
 ]
 
 { #category : #doits }

@@ -1,10 +1,7 @@
 Class {
 	#name : #CMAbstractModelTest,
-	#superclass : #TestCase,
-	#instVars : [
-		'model'
-	],
-	#category : #'Cormas-Tests'
+	#superclass : #CMTestObject,
+	#category : #'Cormas-Tests-Model'
 }
 
 { #category : #test }
@@ -21,17 +18,12 @@ ECEC' lines
 ]
 
 { #category : #'tests-accessing-entities' }
-CMAbstractModelTest >> newTestModel [
-	^ (CMTestModel
-		initialize;
-		new)
-		activeInit: #initAlive;
-		initSimulation;
-		initializeSpaceModel;
-		createGridLines: 20
-			columns: 10
-			neighbourhood: 4
-			closed: true;
+CMAbstractModelTest >> newProjectManager [
+
+	^ CMProjectManager new 
+		currentProject: (CMProjectModel basicNew
+				initializeForModel: model named: self sampleModelNameWithoutPrefix;
+				yourself);
 		yourself
 ]
 
@@ -39,6 +31,12 @@ CMAbstractModelTest >> newTestModel [
 CMAbstractModelTest >> sampleModelName [
 
 	^ 'CMXXXModel'
+]
+
+{ #category : #'tests-accessing-entities' }
+CMAbstractModelTest >> sampleModelNameWithoutPrefix [
+
+	^ 'SampleModel'
 ]
 
 { #category : #'tests-accessing-entities' }
@@ -117,6 +115,75 @@ CMAbstractModelTest >> testDominance1 [
 	self assert: (m dominance: #state) < 1.0
 ]
 
+{ #category : #test }
+CMAbstractModelTest >> testHasActiveInit [
+
+	self assert: model hasActiveInit.
+	model activeInit: nil.
+	self deny: model hasActiveInit.
+	
+]
+
+{ #category : #test }
+CMAbstractModelTest >> testHasActiveProbes [
+
+	self deny: model hasActiveProbes.
+	model setActiveProbes: #(#Global).
+	self assert: model hasActiveProbes.
+	model setActiveProbes: Array empty.
+]
+
+{ #category : #test }
+CMAbstractModelTest >> testHasControlInit [
+
+	self deny: model hasControlInit.
+	model activeControl: #step:.
+	self assert: model hasControlInit.
+
+	
+]
+
+{ #category : #test }
+CMAbstractModelTest >> testInitSimulation [
+
+	model := (CMTestModel
+		initialize;
+		new)
+		activeInit: #initAlive;
+		activeControl: #step:.
+	self deny: model initStatus.
+	model initSimulation.
+	self assert: model initStatus.
+]
+
+{ #category : #test }
+CMAbstractModelTest >> testInitStatus [
+
+	self assert: model initStatus.
+	model initStatus: false.
+	self deny: model initStatus.
+	
+]
+
+{ #category : #test }
+CMAbstractModelTest >> testIsInitialized [
+
+	model := (CMTestModel
+		initialize;
+		new)
+		activeInit: #initAlive;
+		activeControl: #step:.
+	self deny: model isInitialized.
+	model initSimulation.
+	self assert: model isInitialized.
+	model activeInit: nil.
+	self deny: model isInitialized.
+	model activeInit: #initAlive.
+	model activeControl: nil.
+	self deny: model isInitialized.	
+	
+]
+
 { #category : #'tests-accessing-entities' }
 CMAbstractModelTest >> testLowerLeftCell [
 	| m |
@@ -157,7 +224,7 @@ CMAbstractModelTest >> testLowerRightCell [
 
 { #category : #'tests-accessing-entities' }
 CMAbstractModelTest >> testModelPrefix [
-	self assert: CMTestCell modelClass modelPrefix equals: 'Test'
+	self assert: CMTestCell modelClass shortName equals: 'Test'
 ]
 
 { #category : #tests }

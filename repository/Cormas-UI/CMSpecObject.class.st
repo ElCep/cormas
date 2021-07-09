@@ -1,6 +1,8 @@
 Class {
 	#name : #CMSpecObject,
 	#superclass : #ComposablePresenter,
+	#traits : 'TCMUIUtils',
+	#classTraits : 'TCMUIUtils classTrait',
 	#instVars : [
 		'projectManager'
 	],
@@ -33,7 +35,6 @@ CMSpecObject class >> openFor: aCMProjectManager [
 
 	^ (self for: aCMProjectManager)
 		openWithSpec;
-		centered;
 		yourself
 ]
 
@@ -100,6 +101,15 @@ CMSpecObject >> iconNamed: aSymbol [
 	^ CMIcons perform: aSymbol
 ]
 
+{ #category : #accessing }
+CMSpecObject >> openBrowserAt: aClass tag: aSymbol [
+
+	Smalltalk tools browserTool openWithState: [ : browser | 
+		browser 
+			selectClass: aClass
+			atMethodTag: aSymbol ]
+]
+
 { #category : #callbacks }
 CMSpecObject >> openHelp [
 	self shouldBeImplemented.
@@ -107,6 +117,7 @@ CMSpecObject >> openHelp [
 
 { #category : #accessing }
 CMSpecObject >> projectAnnouncer [
+	" Private - Answer the <Announcer> used by the receiver's project "
 
 	^ self projectManager announcer 
 ]

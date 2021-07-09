@@ -4,7 +4,7 @@ plop
 Class {
 	#name : #CormasOpenMoleTest,
 	#superclass : #TestCase,
-	#category : #'Cormas-Tests'
+	#category : #'Cormas-Tests-Model'
 }
 
 { #category : #examples }
@@ -29,21 +29,6 @@ CormasOpenMoleTest class >> inJSON [
 	"dimensionMax": 80
 }
 '
-]
-
-{ #category : #test }
-CormasOpenMoleTest >> testLoadJSONFile [
-	| conf verif |
-	CormasOpenMoleTest createInJSONFile.
-	conf := CMOpenMoleExchange loadJSONFile: 'input.json'.
-	verif := Dictionary
-		newFrom:
-			{('dimensionMax' -> 80).
-			('dimensionMin' -> 60).
-			('numberOfFiremen' -> 20).
-			('numberOfFires' -> 3).
-			('percentageOfTrees' -> 0.65)}.
-	self assert: (conf at: #dimensionMax) == (verif at: #dimensionMax)
 ]
 
 { #category : #test }

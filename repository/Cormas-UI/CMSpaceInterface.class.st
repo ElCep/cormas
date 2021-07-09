@@ -31,6 +31,8 @@ Smalltalk tools workspace
 Class {
 	#name : #CMSpaceInterface,
 	#superclass : #PFStandardProjectWindow,
+	#traits : 'TCMUIUtils',
+	#classTraits : 'TCMUIUtils classTrait',
 	#instVars : [
 		'spaceView',
 		'specSpaceView'
@@ -65,13 +67,19 @@ CMSpaceInterface class >> openFor: aCMProjectManager [
 
 	^ (self for: aCMProjectManager)
 		openWithSpec;
-		centered;
 		yourself
 ]
 
 { #category : #private }
 CMSpaceInterface >> closeAfterCreateProject [
 	^ true
+]
+
+{ #category : #accessing }
+CMSpaceInterface >> cormasModel [
+	" Answer the receiver's model, a subclass of <CMAbstractModel> "
+
+	^ self projectManager cormasModel
 ]
 
 { #category : #initialization }
@@ -320,8 +328,10 @@ CMSpaceInterface >> initializeToolsMenuToolbar [
 					
 				addItem: [ :item | 
 					item
-						name: 'inspect';
-						action: [ self inspect ] ] ];
+						name: self translator tInspectModel;
+						icon: (self iconNamed: #smallObjects);
+						shortcut: $I command;
+						action: [ self cormasModel inspect ] ] ];
 		yourself
 ]
 
@@ -359,7 +369,7 @@ CMSpaceInterface >> specSpaceView: anObject [
 	specSpaceView := anObject
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #private }
 CMSpaceInterface >> subMenuForClassPov: aClass [
 	^ MenuModel new
 		addGroup: [ :group | 
@@ -398,5 +408,7 @@ CMSpaceInterface >> subMenuForNew [
 
 { #category : #initialization }
 CMSpaceInterface >> title [
-	^ 'CORMAS - Visualization Space'
+	" Private - See superimplementor's comment "
+
+	^ self formattedWindowTitle: 'Visualization Space'
 ]

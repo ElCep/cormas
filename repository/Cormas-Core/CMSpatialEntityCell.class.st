@@ -27,7 +27,7 @@ CMSpatialEntityCell >> bufferState: aValue [
 	bufferState := aValue
 ]
 
-{ #category : #'+ initialize - release' }
+{ #category : #'initialize - release' }
 CMSpatialEntityCell >> initWith: aValue [
 	"Purpose: assigns a given value to the 'state' attribute"
 	
@@ -40,6 +40,18 @@ CMSpatialEntityCell >> newState [
 Example: self bufferState: (test ifTrue: [value1] ifFalse: [value2])"
 
 	self subclassResponsibility
+]
+
+{ #category : #printing }
+CMSpatialEntityCell >> printOn: aStream [
+	" Private - See superimplementor's comment "
+	
+	super printOn: aStream.
+	aStream
+		space;
+		<< $-;
+		<< 'state: ';
+		<< self state asString
 ]
 
 { #category : #accessing }

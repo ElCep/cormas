@@ -1,5 +1,6 @@
 "
-Simulation interface
+Simulation interface.
+This is the inner part of the main application window.
 
 For the Collaborators Part: State my main collaborators and one line about how I interact with them. 
 
@@ -249,8 +250,19 @@ CMSpecSimulationWindow >> currentStepLabel: anObject [
 
 { #category : #callbacks }
 CMSpecSimulationWindow >> defineScenarioAction [
+	" Private - Callback for the simulation button in the main Simulation Window "
 
-	CMSpecConfirmBeforeLaunch openFor: self projectManager
+	(self projectManager currentProjectHasInitMethods and: [ self projectManager currentProjectHasControlMethods ])
+		ifTrue: [ CMSpecConfirmBeforeLaunch openFor: self projectManager ]
+		ifFalse: [
+			self projectManager currentProjectHasInitMethods 
+				ifFalse: [ 
+					self informMessage: self translator tDefineInit4Scenario. 
+					self openBrowserAt: self cormasModelClass tag: #init ].
+			self projectManager currentProjectHasControlMethods
+				ifFalse: [ 
+					self informMessage: self translator tDefineControl4Scenario. 
+					self openBrowserAt: self cormasModelClass tag: #control ]  ]
 ]
 
 { #category : #morphic }
@@ -356,6 +368,16 @@ CMSpecSimulationWindow >> initialize [
 ]
 
 { #category : #initialization }
+CMSpecSimulationWindow >> initializeButtons [
+
+	self changeButton label: self translator tChange.
+	self closeButton 
+		icon: (self iconNamed: #smallCancelIcon);
+		action: [ self delete ];
+		help: self translator tSimCloseHelp.
+]
+
+{ #category : #initialization }
 CMSpecSimulationWindow >> initializeFocus [
 	" Private - See superimplementor's comment "
 
@@ -372,6 +394,17 @@ CMSpecSimulationWindow >> initializeFocus [
 		add: self runStepByStepButton;
 		add: self runButton;
 		add: self finalStepInputText
+]
+
+{ #category : #initialization }
+CMSpecSimulationWindow >> initializeInputs [
+
+	self currentStepInputText
+		text: 0;
+		help: self translator tSimStepHelp.
+	self finalStepInputText
+		text: 0;
+		help: self translator tSimFinalStepHelp
 ]
 
 { #category : #accessing }
@@ -445,32 +478,32 @@ CMSpecSimulationWindow >> initializeSimButton: anObject [
 ]
 
 { #category : #initialization }
+CMSpecSimulationWindow >> initializeSubscriptions [
+
+	self projectAnnouncer
+		when: CMTimeChangedAnnouncement
+		do: [ : ann | self newCurrentStepValue: ann timeStep ]
+]
+
+{ #category : #initialization }
 CMSpecSimulationWindow >> initializeWidgets [
 	" Private - See superimplementor's comment "
 
-	self
-		instantiateModels:
-			#(simulateLabel LabelModel replayLabel LabelModel initializeLabel LabelModel backwardLabel LabelModel currentStepLabel LabelModel finalStepLabel LabelModel forwardLabel LabelModel currentStepInputText TextInputFieldModel finalStepInputText TextInputFieldModel changeButton ButtonModel closeButton ButtonModel).
-	self initializeFocus.
-	self initializeLabels.
-	self changeButton label: self translator tChange.
-	self closeButton
-		icon:
-			(self iconNamed: #smallCancelIcon);
-		action: [ self delete ];
-		help: self translator tSimCloseHelp.
-	self currentStepInputText
-		text: 0;
-		help: self translator tSimStepHelp.
-	self finalStepInputText
-		text: 0;
-		help: self translator tSimFinalStepHelp
+	self instantiateModels: #(simulateLabel LabelModel replayLabel LabelModel initializeLabel LabelModel backwardLabel LabelModel currentStepLabel LabelModel finalStepLabel LabelModel forwardLabel LabelModel currentStepInputText TextInputFieldModel finalStepInputText TextInputFieldModel changeButton ButtonModel closeButton ButtonModel).
+	self 
+		initializeFocus;
+		initializeLabels;
+		initializeButtons;
+		initializeInputs;
+		initializeSubscriptions.
+
 ]
 
 { #category : #changes }
 CMSpecSimulationWindow >> newCurrentStepValue: anInteger [
-anInteger isInteger ifFalse: [ self halt ].
-self currentStepInputText text: anInteger.
+
+	anInteger isInteger ifFalse: [ self halt ].
+	self currentStepInputText text: anInteger asString.
 ]
 
 { #category : #morphic }
@@ -711,8 +744,13 @@ CMSpecSimulationWindow >> run1StepBackwardButtonMorph [
 
 { #category : #callbacks }
 CMSpecSimulationWindow >> runAction [
+	" Callback for the run all steps button "
+
+	self validateRunStep
+		ifFalse: [ self cormasModel initSimulation ].
 	self simManager finalTime: self finalStepInputText text asInteger.
-	self simManager loopRunStep_untilFinalTime
+	self simManager loopRunStep_untilFinalTime.
+	self currentStepInputText text: self finalStepInputText text.
 ]
 
 { #category : #morphic }
@@ -754,7 +792,12 @@ CMSpecSimulationWindow >> runButtonMorph [
 
 { #category : #callbacks }
 CMSpecSimulationWindow >> runStepByStepAction [
-	self simManager runStepByStep
+	" Private - Request simulation manager to execute 1 step. Initialize the simulation if not set. Update the UI "
+
+	self validateRunStep
+		ifFalse: [ self cormasModel initSimulation ].
+	self simManager runStepByStep.
+	self currentStepInputText text: (self cormasModel timeStep asString)
 ]
 
 { #category : #accessing }
@@ -805,4 +848,11 @@ CMSpecSimulationWindow >> title [
 	" Private - See superimplementor's comment "
 
 	^ ''
+]
+
+{ #category : #testing }
+CMSpecSimulationWindow >> validateRunStep [
+	" Answer <true> if the receiver's model is ready to run "
+	
+	^ self cormasModel isInitialized
 ]

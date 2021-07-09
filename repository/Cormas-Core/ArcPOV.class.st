@@ -9,14 +9,8 @@ Class {
 		'startPosition',
 		'stopPosition'
 	],
-	#category : 'Cormas-Core-Interface'
+	#category : #'Cormas-Core-Legacy'
 }
-
-{ #category : #viewCorrespondance }
-ArcPOV class >> asFigure [
-	
-	^ArcFigure
-]
 
 { #category : #'instance creation' }
 ArcPOV class >> new [

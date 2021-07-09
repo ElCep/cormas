@@ -7,14 +7,10 @@ Class {
 	#category : #'Cormas-UI-Tests-Project'
 }
 
-{ #category : #'tests-accessing-entities' }
-CMProjectManagerTest >> newProjectManager [
+{ #category : #test }
+CMProjectManagerTest >> newValidEntityNamed: entityName [
 
-	^ CMProjectManager new 
-		currentProject: (CMProjectModel basicNew
-				initializeForModel: model named: 'Sample Model';
-				yourself);
-		yourself
+	CMSpatialEntityAggregate subclass: (entityName asValidCormasClassName: self sampleModelNameWithoutPrefix)
 ]
 
 { #category : #accessing }
@@ -67,12 +63,8 @@ CMProjectManagerTest >> testCormasModel [
 { #category : #test }
 CMProjectManagerTest >> testCormasModelAuthors [
 
-	| modelClass |
-	
 	self projectManager cormasModelAuthors: 'author1;author@cormas.org'.
-	modelClass := self projectModel cormasModelClass.
-	self assert: (modelClass respondsTo: #cmAuthors).
-	self assert: modelClass cmAuthors equals: 'author1;author@cormas.org'.
+	self assert: self projectManager cormasModelAuthors equals: 'author1;author@cormas.org'.
 ]
 
 { #category : #test }
@@ -87,10 +79,10 @@ CMProjectManagerTest >> testCormasModelComment [
 
 	| modelComment |
 	
+	self assert: self projectManager cormasModelComment isNil.
 	modelComment := 'This is a model comment'.
-	self projectModel cormasModelComment: modelComment.
-	self assert: (self projectManager cormasModelClass respondsTo: #comments).
-	self assert: self projectManager cormasModelClass comments equals: modelComment.
+	self projectManager cormasModelComment: modelComment.
+	self assert: self projectManager cormasModelComment equals: modelComment.
 ]
 
 { #category : #test }
@@ -128,20 +120,6 @@ CMProjectManagerTest >> testCormasModels [
 ]
 
 { #category : #test }
-CMProjectManagerTest >> testCormasOpenLocations [
-
-	self 
-		assert: self projectManager cormasOpenLocations 
-		equals: self projectManager cormasOpenLocationsMap keys.
-]
-
-{ #category : #test }
-CMProjectManagerTest >> testCormasOpenLocationsMap [
-
-	self assert: (self projectManager cormasOpenLocationsMap isKindOf: Dictionary).
-]
-
-{ #category : #test }
 CMProjectManagerTest >> testCreateClassModelNamed [
 
 	| modelClassname |
@@ -149,17 +127,6 @@ CMProjectManagerTest >> testCreateClassModelNamed [
 	modelClassname := self sampleModelName.
 	self assert: ((self projectManager createClassModelNamed: modelClassname) isKindOf: Class).
 	self assert: (self class environment hasClassNamed: modelClassname).
-]
-
-{ #category : #test }
-CMProjectManagerTest >> testCurrentProjectAuthors [
-
-	| authors |
-	authors := 'author_name1;
-author_name2'.
-	self projectManager cormasModelAuthors: authors.
-	self assert: self projectManager currentProjectAuthors equals: authors.
-
 ]
 
 { #category : #test }
@@ -203,6 +170,18 @@ CMProjectManagerTest >> testCurrentProjectVersion [
 ]
 
 { #category : #test }
+CMProjectManagerTest >> testIsValidCormasEntityName [
+
+	| entityName |
+
+	entityName := 'Entity1'.
+	self assert: (self projectManager isValidCormasEntityName: entityName).
+	self newValidEntityNamed: entityName.
+	self deny: (self projectManager isValidCormasEntityName: entityName).
+	(self class environment at: (entityName asValidCormasClassName: self sampleModelNameWithoutPrefix)) removeFromSystem
+]
+
+{ #category : #test }
 CMProjectManagerTest >> testModelControlInitMethods [
 
 	self assert: (self projectManager modelControlInitMethods isKindOf: Array).
@@ -221,13 +200,6 @@ CMProjectManagerTest >> testModelProbesMethods [
 
 	self assert: (self projectManager modelProbesMethods isKindOf: Array).
 	self assertCollection: self projectManager modelProbesMethods hasSameElements: #('Global>>numDeads' 'Global>>numAlives').
-]
-
-{ #category : #test }
-CMProjectManagerTest >> testOpenImageProject [
-
-	self assert: ((self projectManager openImageProject: #CMECECModel) isKindOf: CMProjectManager).
-	self assert: self projectManager currentProject cormasModelClass equals: CMECECModel
 ]
 
 { #category : #test }

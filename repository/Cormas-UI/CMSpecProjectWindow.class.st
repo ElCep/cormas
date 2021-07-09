@@ -1,6 +1,12 @@
+"
+This is the main CORMAS UI window.
+
+"
 Class {
 	#name : #CMSpecProjectWindow,
 	#superclass : #PFStandardProjectWindow,
+	#traits : 'TCMUIUtils',
+	#classTraits : 'TCMUIUtils classTrait',
 	#instVars : [
 		'simWindow'
 	],
@@ -39,26 +45,62 @@ CMSpecProjectWindow class >> open [
 	
 	CMApplicationProject release.
 	PFProjectSettings currentApplicationClass: CMApplicationProject.
+	" Check models are available or should be migrated from the image "
+	CMApplicationProject hasUserProjects
+		ifFalse: [ CMModel2ProjectMigrator migrateModels ].
 	" Rebuild translator table "
 	CMApplicationProject uniqueInstance translator: nil.		
 	win := self new 
 		openWithSpec;
-		centered;
 		startFSM;
 		yourself.
 	win simWindow hideSimInterface
 ]
 
-{ #category : #callbacks }
-CMSpecProjectWindow >> applicationProperties [
-	" Private - Open a window to set receiver's properties "
-
-	(CMSpecModelComments for: self projectManager) openWithSpec
-]
-
 { #category : #private }
 CMSpecProjectWindow >> closeAfterCreateProject [
 	^ true
+]
+
+{ #category : #private }
+CMSpecProjectWindow >> cormasExpressions [
+	" Answer a <String> with useful Cormas expressions to debug/develop/cleanup "
+	
+	^ 'CMConwayModel spatialClasses.
+CMConwayModel passiveClasses.
+CMConwayModel socialClasses.
+
+CMConwayModel passiveClasses: nil.
+CMConwayModel socialClasses: nil.
+CMConwayModel spatialClasses: nil.
+		
+CMProjectModel allInstances isEmpty.
+CMProjectManager allInstances.
+CMSpecProjectWindow allInstances.
+
+CMProjectModel allInstances first.
+CMProjectManager allInstances first.
+CMSpecProjectWindow allInstances first.
+
+CMProjectModel allInstances first pointersTo.
+CMProjectManager allInstances first pointersTo.
+CMSpecProjectWindow allInstances first pointersTo.
+
+CMSpecProjectWindow allInstances first projectAnnouncer subscriptions reset.
+CMProjectManager allInstances first announcer subscriptions reset.
+
+3 timesRepeat: [ Smalltalk garbageCollect ].
+{ CMProjectModel allInstances.
+CMProjectManager allInstances.
+CMSpecProjectWindow allInstances } allSatisfy: #isEmpty.'
+
+]
+
+{ #category : #private }
+CMSpecProjectWindow >> cormasModel [
+	" Answer the receiver's model, a subclass of <CMAbstractModel> "
+
+	^ self projectManager cormasModel
 ]
 
 { #category : #private }
@@ -68,18 +110,18 @@ CMSpecProjectWindow >> cormasModelClass [
 	^ self projectManager cormasModelClass 
 ]
 
+{ #category : #'submenu-tools-developer' }
+CMSpecProjectWindow >> cormasPackages [
+	" Anwser a <Collection> of <RPackage> which belong to the CORMAS project "
+	
+	^ RPackageOrganizer default packageNames select: [ : each | each beginsWith: 'Cormas' ]
+]
+
 { #category : #defaults }
 CMSpecProjectWindow >> defaultProjectManagerClass [
 	" Private - See superimplementor's comment "
 
 	^ CMProjectManager
-]
-
-{ #category : #defaults }
-CMSpecProjectWindow >> defaultWindowTitle [
-	" Private - See superimplementor's comment "
-
-	^ 'Cormas'
 ]
 
 { #category : #initialization }
@@ -143,15 +185,12 @@ CMSpecProjectWindow >> initializeSimulationSubMenu: group [
 
 { #category : #initialization }
 CMSpecProjectWindow >> initializeSubscriptions [
+	" Private - See superimplementor's comment "
 
+	super initializeSubscriptions.
 	self projectAnnouncer
-		when: CMProjectOpenAnnouncement
-		send: #updateStateOpened
-		to: self.
-	self projectAnnouncer
-		when: CMProjectNewAnnouncement
-		send: #updateStateNew
-		to: self.
+		when: CMFinalStepChangedAnnouncement
+		do: [ : ann | self simWindow simWindow finalStepInputText text: ann finalStep. ].
 	self projectAnnouncer
 		when: CMProjectUpdateAnnouncement, CMProjectRenameAnnouncement
 		do: [ : ann | 
@@ -195,6 +234,12 @@ CMSpecProjectWindow >> intializeToolsSubMenu: group [
 			item
 				name: self translator tTools;
 				subMenu: self subMenuForTools ]
+]
+
+{ #category : #testing }
+CMSpecProjectWindow >> isMainCormasAppWindow [
+
+	^ true
 ]
 
 { #category : #menu }
@@ -248,9 +293,7 @@ CMSpecProjectWindow >> menuDisableProgrammingGroup [
 		#tEditAttributes .
 		#tEditSteps .
 		#tEditActivityDiagrams .
-		#tProbes .
-		#tMessages .
-		#tSpaceEntities
+		#tClassEditor
 	} do: [ : itemSel | self menuDisableItem: itemSel ]
 ]
 
@@ -345,9 +388,7 @@ CMSpecProjectWindow >> menuEnableProgrammingGroup [
 		#tEditAttributes .
 		#tEditSteps .
 		#tEditActivityDiagrams .
-		#tProbes .
-		#tMessages .
-		#tSpaceEntities
+		#tClassEditor
 	} do: [ : itemSel | self menuEnableItem: itemSel ]
 ]
 
@@ -383,7 +424,8 @@ CMSpecProjectWindow >> menuEnableToolsGroup [
 		#tDisplayModelVersions .
 		#tDistributeAsServer .
 		#tDistributeAsClient .
-		#tPackageClient
+		#tPackageClient .
+		#tPreferences
 	} do: [ : itemSel | self menuEnableItem: itemSel ]
 ]
 
@@ -392,15 +434,50 @@ CMSpecProjectWindow >> menuEnableVisualizationGroup [
 	" Private - Disable all menu items within the Visualization group "
 
 	{ 
-		#tProgrammingEntityClass .
-		#tEditInit .
-		#tEditAttributes .
-		#tEditSteps .
-		#tEditActivityDiagrams .
 		#tProbes .
 		#tMessages .
 		#tSpaceEntities
 	} do: [ : itemSel | self menuEnableItem: itemSel ]
+]
+
+{ #category : #'submenu-tools-developer' }
+CMSpecProjectWindow >> openCormasIssue [
+
+	Cursor wait showWhile: [ WebBrowser openOn: 'https://github.com/cormas/cormas/issues/new/choose' ]
+]
+
+{ #category : #'submenu-tools-developer' }
+CMSpecProjectWindow >> openCormasSystemBrowser [
+
+	Smalltalk tools browser openWithState: [ : browser | 
+		browser 
+			setUpScopedModeWith: (ClyPackageScope 
+				ofAll: (self cormasPackages collect: #asPackage)
+				in: ClyNavigationEnvironment currentImage 
+				named: 'CORMAS') ]
+]
+
+{ #category : #'submenu-tools-developer' }
+CMSpecProjectWindow >> openDependenciesGraph [
+
+	| matchingPackages |
+
+	matchingPackages := self cormasPackages.
+	matchingPackages := { 'Cormas-Core' . 'Cormas-UI' }.
+	(DAPackageRelationGraphGenerator 
+		newWith: ((DAPackageRelationGraph 
+				onPackages: (matchingPackages collect: [ :packageName | (DAPackage onPackageNamed: packageName) ]))
+				build) 
+		named: 'CORMAS Dependencies')
+			graphviz 
+			make: 'dot';
+			openInWindow. 
+]
+
+{ #category : #'submenu-tools-developer' }
+CMSpecProjectWindow >> openDependenciesTool [
+
+	Cursor wait showWhile: [ (DAPackageAnalyzerTreePresenter onPackagesMatch: '*Cormas*') open ]
 ]
 
 { #category : #callbacks }
@@ -424,7 +501,7 @@ CMSpecProjectWindow >> openEditAttributesFor: aCMEditAttributesAnnouncement [
 CMSpecProjectWindow >> openEditInitialization [
 	" Open a browser tool to edit the receiver's model initialization "
 
-	ClyFullBrowser openWithState: [ : browser | 
+	Smalltalk tools browser openWithState: [ : browser | 
 		browser selectClass: self cormasModelClass atMethodTag: #init ]
 ]
 
@@ -432,9 +509,9 @@ CMSpecProjectWindow >> openEditInitialization [
 CMSpecProjectWindow >> openEditSteps [
 	" Open a browser tool to edit the model steps "
 
-	Smalltalk tools browser 
-		openOnCategory: #control
-		ofClass: self cormasModelClass 
+	Smalltalk tools browser openWithState: [ : browser | 
+		browser selectClass: self cormasModelClass atMethodTag: #control ]
+
 		
 ]
 
@@ -454,7 +531,13 @@ CMSpecProjectWindow >> openProgrammingEntityClass [
 	" Private - Open an entities browser "
 
 	CMSpecEntitiesBrowser openFor: self projectManager
+]
 
+{ #category : #callbacks }
+CMSpecProjectWindow >> openProjectProperties [
+	" Private - Open a window to set receiver's properties "
+
+	(CMSpecModelComments for: self projectManager) openWithSpec
 ]
 
 { #category : #callbacks }
@@ -476,10 +559,11 @@ CMSpecProjectWindow >> openVizProbes [
 
 { #category : #callbacks }
 CMSpecProjectWindow >> openVizSpace [
+
 	| aModel viz |
 	aModel := self projectManager cormasModel.
-	aModel spaceModel isNil
-		ifTrue: [ ^ self alertMessage: 'No spaceModel to visualize' ].
+	aModel spaceModel ifNil: [ 
+		^ self alertMessage: self translator tNoSpaceModel ].
 	viz := CMSpaceInterface openFor: self projectManager.
 	viz spaceView: viz specSpaceView spec instance view.
 	viz window extent: viz spaceView canvas extent + (20 @ 20).
@@ -491,6 +575,30 @@ CMSpecProjectWindow >> openVizSpace [
 CMSpecProjectWindow >> projectAnnouncer [
 
 	^ self projectManager announcer
+]
+
+{ #category : #private }
+CMSpecProjectWindow >> quitApplicationWindow [
+	" Part of the #quitApplicationHack "
+
+	self quitSubApplicationWindows.
+	super quitApplicationWindow.
+]
+
+{ #category : #private }
+CMSpecProjectWindow >> quitSubApplicationWindows [
+	" Private - Close all opened Cormas windows "
+	
+	World submorphs
+		select: [ :sm | sm isCormasSubApplicationWindow ]
+		thenDo: [ :w | w delete ].
+]
+
+{ #category : #'submenu-tools-developer' }
+CMSpecProjectWindow >> runCormasTests [
+
+	^ Cursor wait showWhile: [ 
+		(SubunitRunner runAndCollectPackages: #('Cormas-Tests')) anyOne inspect ]
 ]
 
 { #category : #accessing }
@@ -531,6 +639,42 @@ CMSpecProjectWindow >> subMenuCormasR [
 			group 
 				addItem: [ : item | self subMenuStartWSR: item ];
 				addItem: [ : item | self subMenuStopWSR: item ] ]
+]
+
+{ #category : #'submenu-tools-developer' }
+CMSpecProjectWindow >> subMenuDependenciesGraph: item [
+
+	item
+		name: self translator tPackageDepedenciesGraph;
+		icon: (self iconNamed: #references);
+		shortcut: $D command;
+		action: [ self openDependenciesGraph ]
+]
+
+{ #category : #'submenu-tools-developer' }
+CMSpecProjectWindow >> subMenuDependenciesTool: item [
+
+	item
+		name: self translator tPackageDepedenciesTool;
+		icon: (self iconNamed: #smallWindow);
+		shortcut: $D command;
+		action: [ self openDependenciesTool ]
+]
+
+{ #category : #'submenu-tools-developer' }
+CMSpecProjectWindow >> subMenuDevTools [
+
+	^ MenuModel new
+		addGroup: [ : group |
+			group 
+				addItem: [ : item | self subMenuDependenciesTool: item ];
+				addItem: [ : item | self subMenuDependenciesGraph: item ] ];
+		addGroup: [ : group | 
+			group
+				addItem: [ : item | self subMenuToolsExpressions: item ];
+				addItem: [ : item | self subMenuToolsCormasBrowser: item ];
+				addItem: [ : item | self subMenuOpenCormasIssue: item ];
+				addItem: [ : item | self subMenuRunCormasTests: item ] ]
 ]
 
 { #category : #'submenu-help' }
@@ -633,7 +777,8 @@ CMSpecProjectWindow >> subMenuForTools [
 				addItem: [ :item | self subMenuToolsMain: item ] ];
 		addGroup: [ :group | 
 			group
-				addItem: [ :item | self subMenuToolsAddOns: item ];
+				"addItem: [ :item | self subMenuToolsAddOns: item ];"
+				addItem: [ :item | self subMenuToolsDeveloperTools: item ];
 				addItem: [ :item | self subMenuToolsModelListing: item ];
 				addItem: [ :item | self subMenuToolsModelGlossary: item ];
 				addItem: [ :item | self subMenuToolsVersions: item ] ];
@@ -642,10 +787,8 @@ CMSpecProjectWindow >> subMenuForTools [
 				addItem: [ :item | self subMenuToolsDistributeAsClient: item ];
 				addItem: [ :item | self subMenuToolsDistributeAsServer: item ];
 				addItem: [ :item | self subMenuToolsPackageClient: item ] ;
-				addItem: [ :item | 
-					item
-						name: 'inspect';
-						action: [ self inspect ] ] ]
+				addItem: [ :item | self subMenuToolsInspectUI: item ];
+				addItem: [ :item | self subMenuToolsPreferences: item ] ]
 ]
 
 { #category : #'submenu-visualization' }
@@ -673,25 +816,14 @@ CMSpecProjectWindow >> subMenuHowToRunThisModel: anItem [
 		action: [ self openHelpHowToRunModel ]
 ]
 
-{ #category : #'submenu-programming' }
-CMSpecProjectWindow >> subMenuOpenClassEditor: item [
+{ #category : #'submenu-tools-developer' }
+CMSpecProjectWindow >> subMenuOpenCormasIssue: item [
+
 	item
-		name: 'Class Editor...';
-		icon:
-			(self iconNamed: #openIcon);
-		shortcut: $c command;
-		action: [ OPUmlProject
-				openOnModel: (OPUMLModel new name: self projectManager cormasModelName) ]
-]
-
-{ #category : #'submenu-programming' }
-CMSpecProjectWindow >> subMenuProgrammingClassEditor [
-
-	^ MenuModel new
-		addGroup: [ : group |
-			group addItem: [ : item | self subMenuOpenClassEditor: item ] ]
-		
-
+		name: self translator tOpenCormasIssue;
+		icon: (self iconNamed: #repair);
+		shortcut: $I command;
+		action: [ self openCormasIssue ]
 ]
 
 { #category : #'submenu-programming' }
@@ -699,7 +831,7 @@ CMSpecProjectWindow >> subMenuProgrammingEntityClass: item [
 
 	item
 		name: self translator tProgrammingEntityClass;
-"		icon: Smalltalk ui icons openIcon;"
+		icon: (self iconNamed: #smallHierarchyBrowser);
 		shortcut: $C command;
 		action: [ self openProgrammingEntityClass ]
 ]
@@ -724,7 +856,7 @@ CMSpecProjectWindow >> subMenuProgrammingMessages: item [
 
 	item
 		name: self translator tMessages;
-"		icon: Smalltalk ui icons openIcon;"
+		icon: (self iconNamed: #smallObjects);
 		shortcut: $M command;
 		action: [ self openProgrammingMessages ]
 ]
@@ -759,7 +891,7 @@ CMSpecProjectWindow >> subMenuProgrammingProbes: item [
 
 	item
 		name: self translator tProbes;
-"		icon: Smalltalk ui icons openIcon;"
+		icon: (self iconNamed: #group);
 		shortcut: $P command;
 		action: [ self openProgrammingProbes ]
 ]
@@ -822,9 +954,19 @@ CMSpecProjectWindow >> subMenuProgrammingUML: item [
 
 	item
 		name: self translator tClassEditor;
-"		icon: Smalltalk ui icons openIcon;"
+		icon: (self iconNamed: #openIcon);
 		shortcut: $U command;
-		subMenu: self subMenuProgrammingClassEditor
+		action: [ OPProject openOnModel: (OPUMLPackage new name: self projectManager cormasModelName) ]
+]
+
+{ #category : #'submenu-tools-developer' }
+CMSpecProjectWindow >> subMenuRunCormasTests: item [
+
+	item
+		name: self translator tRunCormasTests;
+		icon: (self iconNamed: #testRunner);
+		shortcut: $T command;
+		action: [ self runCormasTests ]
 ]
 
 { #category : #'submenu-simulation' }
@@ -846,7 +988,7 @@ CMSpecProjectWindow >> subMenuSimAnalysis: item [
 
 	item
 		name: self translator tAnalysis;
-"		icon: Smalltalk ui icons openIcon;"
+		icon: (self iconNamed: #smallInspectIt);
 		shortcut: $A command;
 		subMenu: self subMenuSimAnalysis
 ]
@@ -897,7 +1039,7 @@ CMSpecProjectWindow >> subMenuSimDisplayParams: item [
 
 	item
 		name: self translator tDisplayParams;
-"		icon: Smalltalk ui icons openIcon;"
+		icon: (self iconNamed: #group);
 		shortcut: $D command;
 		action: [ self openSimDisplayParams ]
 ]
@@ -941,7 +1083,7 @@ CMSpecProjectWindow >> subMenuSimEditSteps: anItem [
 
 	anItem
 		name: self translator tEditSteps;
-"		icon: Smalltalk ui icons openIcon;"
+		icon: (self iconNamed: #edit);
 		shortcut: $S command;
 		action: [ self openEditSteps ]		
 
@@ -953,7 +1095,7 @@ CMSpecProjectWindow >> subMenuSimInformation: item [
 
 	item
 		name: self translator tSimInformation;
-"		icon: Smalltalk ui icons openIcon;"
+		icon: (self iconNamed: #smallInfo);
 		shortcut: $F command;
 		action: [ self openSimInformation ]
 ]
@@ -963,7 +1105,7 @@ CMSpecProjectWindow >> subMenuSimInterface: item [
 
 	item
 		name: self translator tSimInterface;
-"		icon: Smalltalk ui icons openIcon;"
+		icon: (self iconNamed: #window);
 		shortcut: $I command;
 		action: [ self simWindow toggleSimInterface ]
 ]
@@ -1053,6 +1195,16 @@ CMSpecProjectWindow >> subMenuToolsAddOns: item [
 
 ]
 
+{ #category : #'submenu-tools-developer' }
+CMSpecProjectWindow >> subMenuToolsCormasBrowser: item [
+
+	item
+		name: self translator tCORMASBrowser;
+		icon: (self iconNamed: #smallHierarchyBrowser);
+		shortcut: $B command;
+		action: [ self openCormasSystemBrowser ]
+]
+
 { #category : #'submenu-tools' }
 CMSpecProjectWindow >> subMenuToolsCreateInstances: item [
 
@@ -1061,6 +1213,16 @@ CMSpecProjectWindow >> subMenuToolsCreateInstances: item [
 "		icon: Smalltalk ui icons openIcon;"
 		shortcut: $C command;
 		action: [ self openToolsCreateInstances ]
+]
+
+{ #category : #'submenu-tools-developer' }
+CMSpecProjectWindow >> subMenuToolsDeveloperTools: item [
+
+	item
+		name: self translator tDeveloperTools;
+		icon: (self iconNamed: #smallExpert);
+		shortcut: $D command;
+		subMenu: self subMenuDevTools
 ]
 
 { #category : #'submenu-tools' }
@@ -1083,12 +1245,32 @@ CMSpecProjectWindow >> subMenuToolsDistributeAsServer: item [
 		action: [ self openToolsDistribteAsServer ]
 ]
 
+{ #category : #'submenu-tools-developer' }
+CMSpecProjectWindow >> subMenuToolsExpressions: item [
+
+	item
+		name: self translator tUsefulExpressions;
+		icon: (self iconNamed: #workspace);
+		shortcut: $P command;
+		action: [ (Workspace openLabel: 'CORMAS - Useful expressions') contents: self cormasExpressions. ]
+]
+
+{ #category : #'submenu-tools' }
+CMSpecProjectWindow >> subMenuToolsInspectUI: item [
+
+	item
+		name: self translator tInspectModel;
+		icon: (self iconNamed: #smallObjects);
+		shortcut: $I command;
+		action: [ self cormasModel inspect ]
+]
+
 { #category : #'submenu-tools' }
 CMSpecProjectWindow >> subMenuToolsMain: item [
 
 	item
 		name: self translator tOpenPharoMenu;
-"		icon: Smalltalk ui icons openIcon;"
+		icon: (self iconNamed: #pharo);
 		shortcut: $P command;
 		action: [ World worldMenu openCenteredInWorld ]
 ]
@@ -1131,6 +1313,17 @@ CMSpecProjectWindow >> subMenuToolsPackageClient: item [
 "		icon: Smalltalk ui icons openIcon;"
 		shortcut: $K command;
 		action: [ self openToolsPackageClient ]
+]
+
+{ #category : #'submenu-tools' }
+CMSpecProjectWindow >> subMenuToolsPreferences: item [
+
+	item
+		name: self translator tPreferences;
+		icon: (self iconNamed: #configuration);
+		shortcut: $O command;
+		action: [ CMSettingsBrowser open ]
+
 ]
 
 { #category : #'submenu-tools' }
@@ -1184,21 +1377,6 @@ CMSpecProjectWindow >> subMenuVizSpace: item [
 ]
 
 { #category : #callbacks }
-CMSpecProjectWindow >> updateCloseProject [
-	" Private - See superimplementor's comment "
-
-	super updateCloseProject.
-	self 
-		menuDisableFileGroup;	
-		menuDisableProgrammingGroup;
-		menuDisableSimulationGroup;
-		menuDisableToolsGroup;
-		menuDisableVisualizationGroup;	
-		menuDisableHelpGroup;
-		updateSimulationWindow.
-]
-
-{ #category : #callbacks }
 CMSpecProjectWindow >> updateSimulationWindow [
 	" Open or update the receiver's simulation interface "
 	
@@ -1206,48 +1384,58 @@ CMSpecProjectWindow >> updateSimulationWindow [
 ]
 
 { #category : #callbacks }
-CMSpecProjectWindow >> updateStateNew [
+CMSpecProjectWindow >> updateUINewProject: aString [
 	" Private - See superimplementor's comment "
 
-	super updateStateNew.
+	super updateUINewProject: aString.
 	self 
 		menuEnableProgrammingGroup;
 		menuEnableSimulationGroup;
 		menuEnableToolsGroup;
 		menuEnableVisualizationGroup;
 		menuEnableHelpGroup;
-		updateSimulationWindow;
-		windowTitle: self formattedWindowTitle;
-		updateTitle.
+		updateSimulationWindow.
 ]
 
 { #category : #callbacks }
-CMSpecProjectWindow >> updateStateOpened [
+CMSpecProjectWindow >> updateUIOpenedProject: aString [
 	" Private - See superimplementor's comment "
 
-	super updateStateOpened.
+	super updateUIOpenedProject: aString.
 	self 
 		menuEnableProgrammingGroup;
 		menuEnableSimulationGroup;
 		menuEnableToolsGroup;
 		menuEnableVisualizationGroup;
 		menuEnableHelpGroup;
-		updateSimulationWindow;
-		windowTitle: self formattedWindowTitle;
-		updateTitle.
+		updateSimulationWindow.
 ]
 
 { #category : #callbacks }
-CMSpecProjectWindow >> updateStateWaitNewOrOpen [
+CMSpecProjectWindow >> updateUIStateForClose: aString [
 	" Private - See superimplementor's comment "
 
-	self flag: #toBeReviewed. "Apparently menugroupmorph does not disable correctly "
-	super updateStateWaitNewOrOpen.
+	super updateUIStateForClose: aString.
 	self 
+		menuDisableFileGroup;	
 		menuDisableProgrammingGroup;
 		menuDisableSimulationGroup;
 		menuDisableToolsGroup;
-		menuDisableVisualizationGroup;
-		menuDisableHelpGroup
+		menuDisableVisualizationGroup;	
+		menuDisableHelpGroup;
+		updateSimulationWindow;
+		quitSubApplicationWindows.
+]
 
+{ #category : #callbacks }
+CMSpecProjectWindow >> updateUIStateForInit [
+	" Private - See superimplementor's comment "
+
+	super updateUIStateForInit.
+	self 
+		menuDisableProgrammingGroup;
+		menuDisableVisualizationGroup;
+		menuDisableSimulationGroup;
+		menuDisableToolsGroup;
+		menuDisableHelpGroup
 ]

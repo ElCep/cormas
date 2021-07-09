@@ -276,12 +276,44 @@ CMTranslator >> addTranslationsForENPart3 [
 		at: #tConfirmDeleteEntity 		put: 'Are you sure to remove the selected entity';
 		at: #tEntities 						put: 'Entities';
 		at: #tRenameEntityDialogText 	put: 'Enter the entity''s name:';
-		at: #tSpecializeEntityDialogText put: 'Create a new kind of Entity
-Enter the entity''s name';
-		at: #tSpecialization 				put: 'CORMAS - Specialization';
+		at: #tSpecializeEntityDialogText put: 'Create a new kind of Entity: Please enter the entity''s name';
+		at: #tSpecialization 				put: 'Specialization';
 		at: #tConfirmAbstractEntity 	put: ' is abstract. It will be changed as concrete class. Ok?';
 		at: #tConfirmConcreteEntity 	put: ' is concrete. It will be changed as abstract class. Ok?';
 		at: #tConfirmDeleteAttribute	put: 'Are you sure to remove the selected attribute';
+		at: #tFixRandomSeed 				put: 'Fix the random seed to';
+		at: #tSelectProbesToRecord		put: 'Select probes to record';
+		at: #tEnableStepBack 				put: 'Enable stepping back';
+		at: #tReleaseRandomSeed 			put: 'Release random seed after initialization';
+		at: #tSelectInitMethod			put: 'Select a method of initialization';
+		at: #tSelectControlMethod 		put: 'Select a method of control';
+		at: #tUsefulExpressions 			put: 'Useful Expressions';
+		at: #tPreferences 					put: 'Preferences';
+		at: #tNumberOfClasses 			put: 'Number of Classes';
+		at: #tNumberOfEntities 			put: 'Number of Entities';
+		at: #tNumberOfAgents 				put: 'Number of Agents';
+		at: #tSize 							put: 'Size';
+		at: #tIncludesMaps 				put: 'Includes maps';
+		at: #tIncludesInputs 				put: 'Includes inputs';
+		at: #tIncludesSims 				put: 'Includes simulations';
+		at: #tCreatedCormasVersion 		put: 'Created in CORMAS version';
+		at: #tAuthors 						put: 'Authors';
+		at: #tOwner 							put: 'Owner';
+		at: #tRelatedProjects 			put: 'Related projects';
+		at: #tChooseStFile 				put: 'Choose st file';
+		at: #tStFiles 						put: 'st files';
+		at: #tConfirmBeforeLaunch 		put: 'Confirmation before launching';
+		at: #tInspectModel 				put: 'Inspect model';
+		at: #tValidNameRequired 			put: 'Please provide a valid name';
+		at: #tDefineInit4Scenario 		put: 'Please define at least one init method for preparing a scenario';
+		at: #tDefineControl4Scenario	put: 'Please define at least one control method for preparing a scenario';
+		at: #tDeveloperTools 				put: 'Developer tools';
+		at: #tRunCormasTests 				put: 'Run CORMAS tests';
+		at: #tOpenCormasIssue 			put: 'Open an issue';
+		at: #tPackageDepedenciesTool 	put: 'Open Package Dependencies Analyzer';
+		at: #tPackageDepedenciesGraph 	put: 'Open Package Dependencies Graph';
+		at: #tCORMASBrowser 				put: 'CORMAS Browser';
+		at: #tNoSpaceModel 				put: 'No space model to visualize';
 		yourself
 ]
 
@@ -527,12 +559,44 @@ CMTranslator >> addTranslationsForESPart3 [
 		at: #tConfirmDeleteEntity 			put: '¿Está seguro de borrar la entidad seleccionada?';
 		at: #tEntities 							put: 'Entidades';
 		at: #tRenameEntityDialogText 		put: 'Ingrese el nombre de la entidad:';
-		at: #tSpecializeEntityDialogText 	put: 'Crear un nuevo tipo de Entidad
-Ingrese el nombre de la entidad';
-		at: #tSpecialization 					put: 'CORMAS - Especialización';
+		at: #tSpecializeEntityDialogText 	put: 'Crear un nuevo tipo de Entidad: Por favor ingrese el nombre de la entidad';
+		at: #tSpecialization 					put: 'Especialización';
 		at: #tConfirmAbstractEntity 		put: ' es abstracta. Será cambiada a una clase concreta. Ok?';
 		at: #tConfirmConcreteEntity 		put: ' es concreta. Será cambiada a una clase abstracta. Ok?';
 		at: #tConfirmDeleteAttribute		put: 'Está seguro de borrar el atributo seleccionado?';
+		at: #tFixRandomSeed 					put: 'Fijar semilla aleatoria de inicialización a';
+		at: #tSelectProbesToRecord			put: 'Seleccione probes a registrar';
+		at: #tEnableStepBack 					put: 'Habilitar retroceso paso a paso';
+		at: #tReleaseRandomSeed 				put: 'Liberar semilla aleatoria luego de inicializar';
+		at: #tSelectInitMethod				put: 'Seleccione un método de inicialización';
+		at: #tSelectControlMethod 			put: 'Seleccione un método de control';
+		at: #tUsefulExpressions 				put: 'Expresiones útiles';
+		at: #tPreferences 						put: 'Configuración';
+		at: #tNumberOfClasses 				put: 'Número de Clases';
+		at: #tNumberOfEntities 				put: 'Número of Entidades';
+		at: #tNumberOfAgents 					put: 'Número of Agentes';
+		at: #tSize 								put: 'Tamaño';
+		at: #tIncludesMaps 					put: 'Incluye mapas';
+		at: #tIncludesInputs 					put: 'Incluye entradas';
+		at: #tIncludesSims 					put: 'Incluye simulaciones';
+		at: #tCreatedCormasVersion 			put: 'Creado en CORMAS';
+		at: #tAuthors 							put: 'Autores';
+		at: #tOwner 								put: 'Propietarip';
+		at: #tRelatedProjects  				put: 'Projectos relacionados';
+		at: #tChooseStFile 					put: 'Seleccionar archivo st';
+		at: #tStFiles 							put: 'archivos st';
+		at: #tConfirmBeforeLaunch 			put: 'Confirmación pre-lanzamiento';
+		at: #tInspectModel 					put: 'Inspeccionar modelo';
+		at: #tValidNameRequired 				put: 'Por favor escriba un nombre válido';
+		at: #tDefineInit4Scenario 			put: 'Por favor define al menos un método de inicialización para preparar un escenario';
+		at: #tDefineControl4Scenario		put: 'Por favor define al menos un método de control para preparar un escenario';
+		at: #tDeveloperTools 					put: 'Herramientas de desarrollo';
+		at: #tRunCormasTests 					put: 'Ejecutar tests de  CORMAS';
+		at: #tOpenCormasIssue 				put: 'Abrir una incidencia';
+		at: #tPackageDepedenciesTool 		put: 'Abrir Analizador de Dependencias de Paquetes';
+		at: #tPackageDepedenciesGraph 		put: 'Abrir Visualización de Dependencias de Paquetes';
+		at: #tCORMASBrowser 					put: 'Navegador de CORMAS';
+		at: #tNoSpaceModel 					put: 'No hay ningún space model para visualizar';
 		yourself
 
 ]

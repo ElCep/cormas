@@ -12,7 +12,7 @@ Class {
 	#instVars : [
 		'entity'
 	],
-	#category : 'Cormas-Core-Tools'
+	#category : #'Cormas-Core-Entities'
 }
 
 { #category : #'instance creation' }
@@ -32,14 +32,6 @@ EntityChange >> dispatchOn: anObject [
 EntityChange >> entity [
 	
 	^entity
-]
-
-{ #category : #'initialize-release' }
-EntityChange >> newChange: aSymbol with: aParameter from: anEntity [
-	
-	symbol := aSymbol.
-	parameter := aParameter.
-	entity := anEntity
 ]
 
 { #category : #printing }

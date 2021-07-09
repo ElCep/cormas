@@ -24,7 +24,9 @@ Class {
 	#instVars : [
 		'cormasModel',
 		'cormasModelClass',
-		'codeGenerator'
+		'codeGenerator',
+		'cormasVersion',
+		'tracker'
 	],
 	#category : #'Cormas-UI-Project'
 }
@@ -33,6 +35,62 @@ Class {
 CMProjectModel class >> for: aCormasModel [
 	" Answer a new instance of the receiver configured for aCormasModel "
 	^ self new initializeForModel: aCormasModel 
+]
+
+{ #category : #'instance creation' }
+CMProjectModel class >> for: aCormasModel named: aString [
+	" Answer a new instance of the receiver configured for aCormasModel "
+	^ self basicNew 
+		initializeForModel: aCormasModel 
+		named: aString
+]
+
+{ #category : #'instance creation' }
+CMProjectModel class >> forMetadata: metadataDictionary [
+	" Answer a new instance of the receiver filled with metadaDictionary "
+	
+	^ self basicNew 
+		version: (metadataDictionary at: #Version);
+		userProvidedName: (metadataDictionary at: #Name);
+		authors: (metadataDictionary at: #Authors);
+		creationDate: (metadataDictionary at: #CreationDate);
+		demo: (metadataDictionary at: #Demo);
+
+		cormasModelComment: (metadataDictionary at: #Comments);
+		cormasVersion: (metadataDictionary at: #'CORMAS version');
+		cormasModelVersion: (metadataDictionary at: #Version);
+
+		relatedProjects: (metadataDictionary at: #'Related projects');
+		osVersion: (metadataDictionary at: #'OS version');
+		stars: (metadataDictionary at: #Stars);
+		valid: (metadataDictionary at: #Valid);
+		language: (metadataDictionary at: #Language);
+		yourself
+		
+]
+
+{ #category : #'instance creation' }
+CMProjectModel class >> forModel: aCormasModel [
+	" Answer a new instance of the receiver configured for aCormasModel "
+	^ self basicNew 
+		initializeForModel: aCormasModel 
+		named: aCormasModel friendlyName
+]
+
+{ #category : #'instance creation' }
+CMProjectModel class >> forProjectFile: aCormasProjectFileReference [
+	" Answer a new instance of the receiver filled with metadaDictionary "
+	
+	^ self basicNew 
+		yourself
+		
+]
+
+{ #category : #accessing }
+CMProjectModel class >> projectFileExtension [
+	" Answer a <String> with the receiver's file extension "
+
+	^ CMApplicationProject applicationExtension
 ]
 
 { #category : #callbacks }
@@ -51,12 +109,26 @@ CMProjectModel >> addNewEntity: aCMEntityNewAnnouncement [
 	" Add a new entity to the receiver "
 	
 	self codeGenerator 
+		targetClass: self cormasModelClass;
 		targetClassCategory: self cormasModelClass category;
 		addNewClassType: aCMEntityNewAnnouncement type
 		inheritingFrom: aCMEntityNewAnnouncement superclass
 		name: aCMEntityNewAnnouncement entityName
 		initProtocol: false 
 		stepProtocol: false
+]
+
+{ #category : #accessing }
+CMProjectModel >> asCormasProjectModelForPreview [
+
+	^ self
+]
+
+{ #category : #'accessing - names' }
+CMProjectModel >> asCormasProjectName [
+	" Answer a <String> with the receiver's name, does not assume a Cormas model already present "
+
+	^ self friendlyName
 ]
 
 { #category : #accessing }
@@ -74,6 +146,14 @@ CMProjectModel >> codeGenerator: anObject [
 ]
 
 { #category : #accessing }
+CMProjectModel >> cormasDemoImage [
+	" Answer a <Morph> demo image for the CORMAS project represented by the receiver "
+	" So far demo images for in-image models are not supported "
+
+	^ CMModelOpener cormasDemoImage 
+]
+
+{ #category : #accessing }
 CMProjectModel >> cormasModel [
 	^ cormasModel
 ]
@@ -86,13 +166,18 @@ CMProjectModel >> cormasModel: aCormasModel [
 ]
 
 { #category : #accessing }
-CMProjectModel >> cormasModelAuthors: aString [ 
+CMProjectModel >> cormasModelAuthors [
+	" See comment in CMProjectManager>>cormasModelAuthors "
+
+	^ self authors
+
+]
+
+{ #category : #accessing }
+CMProjectModel >> cormasModelAuthors: aCollection [ 
 	" See comment in CMProjectManager>>cormasModelAuthors: "
 
-	self codeGenerator
-		generateMethod: aString 
-		selector: #cmAuthors 
-		inClass: self cormasModelClass class.
+	self authors: aCollection
 
 ]
 
@@ -112,13 +197,26 @@ CMProjectModel >> cormasModelClass: aClass [
 ]
 
 { #category : #accessing }
-CMProjectModel >> cormasModelComment: aString [ 
-	" See comment in CMProjectManager>>cormasModelComment: "
+CMProjectModel >> cormasModelClasses [
+	" Answer a <Collection> with the receiver's model classes "
 
-	self codeGenerator 
-		generateMethod: aString 
-		selector: #comments 
-		inClass: self cormasModelClass class.
+	^ self cormasModelClass package classes
+
+]
+
+{ #category : #accessing }
+CMProjectModel >> cormasModelComment [
+	" Answer a <String> with the receiver's comments "
+
+	^ self info comment
+
+]
+
+{ #category : #accessing }
+CMProjectModel >> cormasModelComment: aString [ 
+	" Set a free text aString to the receiver's comments "
+
+	self info comment: aString
 
 ]
 
@@ -133,20 +231,32 @@ CMProjectModel >> cormasModelCreationDate: aString [
 
 ]
 
-{ #category : #accessing }
+{ #category : #'accessing - names' }
 CMProjectModel >> cormasModelName [
-	" Answer a <String> with the receiver's model name "
+	" Answer a <String> with the receiver's CORMAS model name "
 
 	^ self cormasModelClass cormasModelName
 ]
 
 { #category : #accessing }
 CMProjectModel >> cormasModelVersion: aString [ 
+	" See comment in #version: "
 
-	self codeGenerator
-		generateMethod: aString 
-		selector: #cmVersion 
-		inClass: self cormasModelClass class
+	self version: aString 
+
+]
+
+{ #category : #accessing }
+CMProjectModel >> cormasVersion [
+	^ cormasVersion
+]
+
+{ #category : #accessing }
+CMProjectModel >> cormasVersion: aString [ 
+	" Set the CORMAS version used to create the receiver. This is the minimum version compatible "
+
+	cormasVersion :=  aString 
+
 ]
 
 { #category : #accessing }
@@ -201,12 +311,24 @@ CMProjectModel >> defaultStdCormasModelName [
 				<< 'Model' ]
 ]
 
-{ #category : #'accessing-simulations' }
+{ #category : #accessing }
+CMProjectModel >> definedCormasVersions [
+	" For now we return a CMProjectModel but we should support versions "
+
+	^ Array with: self
+]
+
+{ #category : #'accessing - simulations' }
 CMProjectModel >> findSimulationNamed: aName [
 	" Answer <true> if the dump folder has stored simulations "
 
 	^ self storedSimulations detect: [ : simName | simName = aName ]
 
+]
+
+{ #category : #'accessing - names' }
+CMProjectModel >> friendlyName [
+	^ self cormasModel friendlyName.
 ]
 
 { #category : #testing }
@@ -221,6 +343,32 @@ CMProjectModel >> hasStoredSimulations [
 	" Answer <true> if the receiver has a project opened and the project's dump folder has stored simulations, <false> otherwise "
 
 	^ self storedSimulations notEmpty
+]
+
+{ #category : #accessing }
+CMProjectModel >> info [
+	" Answer an instance of <PFProjectInformation> "
+
+	^ info
+		ifNil: [ 
+			info := PFProjectInformation 
+				named: self defaultCormasModelName
+				project: self. ]
+]
+
+{ #category : #accessing }
+CMProjectModel >> infoDictionary [
+
+	^ OrderedDictionary newFromPairs: { 
+		'Name' . self info infoName .
+		'Version' . self versionString .
+		'Author' . self authorName .
+		'Creation date' . self history creationDateAsString .
+		'Is demo' . self demo asString .
+		'Full name' . self info fullFilename .
+		'OS version' . self osVersion .
+		'Language' . self language .
+		'Comments' . self cormasModelComment }
 ]
 
 { #category : #'initialize - release' }
@@ -252,19 +400,41 @@ CMProjectModel >> initializeEvents [
 CMProjectModel >> initializeForModel: aCormasModel [
 	" Private - Set up the cormas model for the receiver "
 
-	self initializeForModel: aCormasModel named: self defaultCormasModelName.
+	self cormasModel: aCormasModel.
+	self cormasModelClass: aCormasModel class.
+	self initializeEvents.
 
 ]
 
 { #category : #'initialize - release' }
 CMProjectModel >> initializeForModel: aCormasModel named: aString [
-	" Private - Set up the cormas model for the receiver "
+	" Private - Set up the cormas model for the receiver with name aString "
 
 	self initializeNamed: aString.
 	self cormasModel: aCormasModel.
 	self cormasModelClass: aCormasModel class.
+	self cormasModel projectManager: self projectManager.
 	self initializeEvents.
 
+]
+
+{ #category : #testing }
+CMProjectModel >> isModified [
+	" See superimplementor's comment "
+	
+	| opener |
+	
+	self projectManager currentProjectFileReference ifNil: [ ^ true ].
+	opener := CMProjectOpener newFrom: self projectManager.
+	opener tryReadSourceFromProject openStatus
+		ifFalse: [ self error: 'Error while reading project from file' ].
+	self tracker track: opener readStream.
+	^ (self tracker equalToCurrent: self cormasModelClasses) not
+]
+
+{ #category : #accessing }
+CMProjectModel >> modelComment [
+	^ self info comment
 ]
 
 { #category : #accessing }
@@ -274,13 +444,27 @@ CMProjectModel >> passiveClasses [
 	^ self cormasModelClass passiveClasses
 ]
 
+{ #category : #printing }
+CMProjectModel >> printOn: aStream [
+	" Private - See superimplementor's comment "
+
+	aStream 
+		nextPutAll: 'Cormas Project: '.
+	info ifNotNil: [ :i | 
+		aStream space; 
+			nextPut: $(;
+			nextPutAll: info infoName;
+			nextPut: $) ]
+		ifNil: [ aStream nextPutAll: '(not yet opened)' ]
+]
+
 { #category : #'initialize - release' }
 CMProjectModel >> projectAnnouncer [
 
 	^ self projectManager announcer
 ]
 
-{ #category : #accessing }
+{ #category : #'accessing - names' }
 CMProjectModel >> projectName [
 	" Answer a <String> with the receiver's model name "
 
@@ -304,29 +488,70 @@ CMProjectModel >> release [
 CMProjectModel >> removeEntity: aCMEntityAnnouncement [ 
 	" Remove the entity class in aCMEntityAnnouncement "
 
-	| theClass |
+	| theClass theGetter |
 	
-	theClass := self class environment at: aCMEntityAnnouncement entityName.
+	theClass := self classFor: aCMEntityAnnouncement entityName.
+	theGetter := theClass asGetterForEntityClass.
+
+	self removeEntitySubclasses: aCMEntityAnnouncement.
+
 	(self perform: (aCMEntityAnnouncement type asLowercase , 'Classes') asSymbol)
 		remove: theClass
 		ifAbsent: [ self error ].
-	self codeGenerator removeClass: aCMEntityAnnouncement entityName asValidCormasClassName.
+	self codeGenerator removeClass: theClass.
+	self removeEntityReferences: theGetter.
+
 ]
 
 { #category : #callbacks }
-CMProjectModel >> renameEntity: aCMEntityAnnouncement [
-	| theClass entitiesGetter |
+CMProjectModel >> removeEntityReferences: theGetter [ 
+	" Remove the entity class in aCMEntityAnnouncement "
+
+	| theSetter |
+	theSetter := theGetter asMutator.
+	(self cormasModelClass canUnderstand: theGetter)
+		ifTrue: [ self cormasModelClass removeSelector: theGetter ].
+	(self cormasModelClass canUnderstand: theSetter)
+		ifTrue: [ self cormasModelClass removeSelector: theSetter ].
+	[ self cormasModelClass removeInstVarNamed: theGetter ]
+	on: SlotNotFound 
+	do: [ : ex | ].
+
+]
+
+{ #category : #callbacks }
+CMProjectModel >> removeEntitySubclasses: aCMEntityAnnouncement [
+	" Callback which ask for confirmation to delete the subclasses in the announcement aCMEntityAnnouncement entity "
+
+	| theClass theGetter |
 	
-	theClass := self class environment at: aCMEntityAnnouncement oldName.
+	theClass := self classFor: aCMEntityAnnouncement entityName.
+	(self shouldRemoveSubclasses: theClass) ifFalse: [ ^ nil ].
+
+	(OrderedCollection withAll: theClass allSubclasses)
+		do: [ : cl | 	
+				theGetter := cl asGetterForEntityClass.
+				(self perform: (aCMEntityAnnouncement type asLowercase , 'Classes') asSymbol)
+					remove: cl
+					ifAbsent: [ self error ].
+				self removeEntityReferences: theGetter.
+				self codeGenerator removeClass: cl ]
+]
+
+{ #category : #callbacks }
+CMProjectModel >> renameEntity: aCMEntityRenameAnnouncement [
+	| oldClass newClass entitiesGetter |
+	
+	oldClass := aCMEntityRenameAnnouncement oldName copy.
+	newClass := aCMEntityRenameAnnouncement entityName asValidCormasClassName: self projectManager cormasProjectName.
 	(self codeGenerator
-		renameClass: aCMEntityAnnouncement oldName asValidCormasClassName
-		to: aCMEntityAnnouncement entityName asValidCormasClassName)
+		renameClass: oldClass
+		to: newClass)
 		ifFalse: [ ^ self ].
-	entitiesGetter := (aCMEntityAnnouncement type asLowercase , 'Classes') asSymbol.
-	(self perform: entitiesGetter)
-		remove: theClass
-		ifAbsent: [ ^ self error ].
-	(self perform: entitiesGetter) add: theClass
+	entitiesGetter := (aCMEntityRenameAnnouncement type asLowercase , 'Classes') asSymbol.
+	(self perform: entitiesGetter) remove: oldClass ifAbsent: [ ].
+	(self perform: entitiesGetter) add: newClass.
+
 ]
 
 { #category : #accessing }
@@ -334,6 +559,39 @@ CMProjectModel >> resourceLocator [
 	" Answer the application's resource locator "
 	
 	^ self application resourceLocator
+]
+
+{ #category : #private }
+CMProjectModel >> saveProjectFile [
+
+	| modelSaver |
+	
+	'Saving project file...' traceCr.
+	modelSaver := CMModel2ProjectMigrator new.
+	modelSaver 
+		buildForModel: self;
+		buildProjectFile;
+		moveProjectFile.
+	'Done saving project.'
+]
+
+{ #category : #callbacks }
+CMProjectModel >> shouldRemoveSubclasses: theClass [
+	" Private - Detect if the parameter theClass has subclasses and confirm with the user. Answer <true> if they should be removed "
+
+	theClass withAllSubclasses size > 1
+		ifTrue: [ 
+			| subClasses |
+			subClasses := String streamContents: [ : stream |
+				theClass allSubclasses do: [ : cl |
+					stream 
+						<< '   ';
+						<< cl name asString;
+						<< '\' ] ].
+			^ self confirm: ('Delete the class ' , theClass name asString , ' and the following subclasses ? \ \' , subClasses) withCRs ].
+
+	^ false
+
 ]
 
 { #category : #accessing }
@@ -364,7 +622,7 @@ CMProjectModel >> specializeEntity: aCMEntityAnnouncement [
 
 ]
 
-{ #category : #'accessing-simulations' }
+{ #category : #'accessing - simulations' }
 CMProjectModel >> storedSimulations [
 	" Answer a <Collection> with the receiver's current model stored simulations "
 
@@ -374,13 +632,34 @@ CMProjectModel >> storedSimulations [
 ]
 
 { #category : #accessing }
+CMProjectModel >> tracker [
+	" Answer a <CMProjectTracker> an object used to track source code changes between a saved version in disk and current version in the image "
+
+	^ tracker
+		ifNil: [ tracker := CMProjectTracker new ]
+]
+
+{ #category : #accessing }
+CMProjectModel >> tracker: anObject [
+
+	tracker := anObject
+]
+
+{ #category : #'accessing - names' }
 CMProjectModel >> userProvidedName [
 	" Answer a <String> with the receiver's name as provided by the user on creation "
 
 	^ self info infoName
 ]
 
-{ #category : #accessing }
+{ #category : #'accessing - names' }
+CMProjectModel >> userProvidedName: aString [
+	" Answer a <String> with the receiver's name as provided by the user on creation "
+
+	self info infoName: aString
+]
+
+{ #category : #'accessing - names' }
 CMProjectModel >> validateCormasModelName: modelName [
 	" Answer a <String> with modelName as valid Smalltalk class name "
 

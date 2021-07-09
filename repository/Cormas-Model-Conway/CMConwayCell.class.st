@@ -12,33 +12,25 @@ Class {
 
 { #category : #'pov symbols' }
 CMConwayCell class >> SpatialEntityPOV_alive [
-	"Returns an array containing the settings of a Spatial entity pov symbol in the following order:
-(color red) (color green) (color blue)"
-	<pov:#alive>
-	^Array with: 0.0 with: 0.670004 with: 0.0
+	<pov: #alive>
+	^ Array with: 0.0 with: 0.670004 with: 0.0
 ]
 
 { #category : #'pov symbols' }
 CMConwayCell class >> SpatialEntityPOV_dead [
-	"Returns an array containing the settings of a Spatial entity pov symbol in the following order:
-(color red) (color green) (color blue)"
-	<pov:#dead>
-	^Array with: 0.0 with: 0.0 with: 0
+	<pov: #dead>
+	^ Array with: 0.0 with: 0.0 with: 0.0
 ]
 
 { #category : #'pov symbols' }
 CMConwayCell class >> SpatialEntityPOV_dead_red [
-	"Returns an array containing the settings of a Spatial entity pov symbol in the following order:
-(color red) (color green) (color blue)"
-	<pov:#dead_red>
-	^Array with: 0.5 with: 0.0 with: 0.1
+	<pov: #dead_red>
+	^ Array with: 0.5 with: 0.0 with: 0.1
 ]
 
-{ #category : #'- default value' }
+{ #category : #'default value' }
 CMConwayCell class >> state_default [
-	"Return the default value of state attribute"
-	
-	^nil
+	^ nil
 ]
 
 { #category : #init }
@@ -54,9 +46,14 @@ CMConwayCell >> initRandomly [
 ]
 
 { #category : #init }
-CMConwayCell >> initTenPercentDead [
-	" 10 % to be dead"
+CMConwayCell >> initTen [
+	Cormas random < 0.1
+		ifTrue: [ self state: #dead ]
+		ifFalse: [ self state: #alive ]
+]
 
+{ #category : #init }
+CMConwayCell >> initTenPercentDead [
 	Cormas random < 0.1
 		ifTrue: [ self state: #dead ]
 		ifFalse: [ self state: #alive ]
@@ -71,13 +68,18 @@ CMConwayCell >> isAlive [
 
 { #category : #control }
 CMConwayCell >> newState [
-	| nbOfAlives |
-	nbOfAlives := self neighbourhood count: [ :n | n state = #alive ].
-	self state = #dead & (nbOfAlives = 3)
+	| tmp1 |
+	tmp1 := self neighbourhood count: [ :arg1 | arg1 state = #alive ].
+	self state = #dead & (tmp1 = 3)
 		ifTrue: [ ^ self bufferState: #alive ].
-	(self state = #alive and: [ nbOfAlives = 2 or: [ nbOfAlives = 3 ] ])
+	(self state = #alive and: [ tmp1 = 2 or: [ tmp1 = 3 ] ])
 		ifTrue: [ ^ self bufferState: #alive ].
 	^ self bufferState: #dead
+]
+
+{ #category : #pov }
+CMConwayCell >> pdv [
+	^ state
 ]
 
 { #category : #pov }
